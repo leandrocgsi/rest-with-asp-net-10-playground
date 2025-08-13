@@ -1,1 +1,1 @@
-# rest-with-asp-net-10-playground
+# rest-with-asp-net-10-erudio
