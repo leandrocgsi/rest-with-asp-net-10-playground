@@ -1,4 +1,4 @@
 ﻿namespace RestWithASPNET10Erudio.Model
 {
-    public record Greeting(long Id, string Content);
+    public record Greeting(long Id, string content);
 }

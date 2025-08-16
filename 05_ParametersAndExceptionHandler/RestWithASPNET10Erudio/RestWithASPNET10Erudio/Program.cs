@@ -6,10 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Register MathService for dependency injection
 builder.Services.AddSingleton<MathService>();
-
-// ou AddScoped se preferir criar uma instância por request
 
 var app = builder.Build();
 

@@ -1,26 +1,32 @@
-﻿using System.Globalization;
-
-namespace RestWithASPNET10Erudio.Utils
+﻿namespace RestWithASPNET10Erudio.Utils
 {
-    public static class NumberHelper
+    public class NumberHelper
     {
-        public static bool IsNumeric(string strNumber)
-        {
-            double number;
-            return double.TryParse(
-                strNumber,
-                NumberStyles.Any,
-                NumberFormatInfo.InvariantInfo,
-                out number
-            );
-        }
-
         public static decimal ConvertToDecimal(string strNumber)
         {
-            if (decimal.TryParse(strNumber, out var decimalValue))
+            decimal decimalValue;
+            if (decimal.TryParse(
+                strNumber,
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.NumberFormatInfo.InvariantInfo,
+                out decimalValue)
+            )
+            {
                 return decimalValue;
-
+            }
             return 0;
+        }
+
+        public static bool IsNumeric(string strNumber)
+        {
+            decimal decimalValue;
+            bool isNumber = decimal.TryParse(
+                strNumber,
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.NumberFormatInfo.InvariantInfo,
+                out decimalValue
+            ); // BR 10,5 US 10.5
+            return isNumber;
         }
     }
 }

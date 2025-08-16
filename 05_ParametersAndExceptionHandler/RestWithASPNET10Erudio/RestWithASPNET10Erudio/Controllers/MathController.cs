@@ -5,85 +5,68 @@ using RestWithASPNET10Erudio.Utils;
 namespace RestWithASPNET10Erudio.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class MathController : ControllerBase
     {
-
-        private readonly MathService _mathService;
-
-        public MathController(MathService mathService)
+        private readonly MathService _service;
+          
+        public MathController(MathService service)
         {
-            _mathService = mathService;
+            _service = service;
         }
 
         [HttpGet("sum/{firstNumber}/{secondNumber}")]
-        public IActionResult Get(string firstNumber, string secondNumber)
+        public IActionResult Sum(string firstNumber, string secondNumber)
         {
-            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber))
-            {
-                var sum = _mathService.Sum(
+            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber)) {
+                var sum = _service.Sum(
                     NumberHelper.ConvertToDecimal(firstNumber),
-                    NumberHelper.ConvertToDecimal(secondNumber));
-                return Ok(sum.ToString());
+                    NumberHelper.ConvertToDecimal(secondNumber)
+                );
+                return Ok(sum);
             }
-
-            return BadRequest("Invalid Input");
+            return BadRequest("Invalid Input!");
         }
 
         [HttpGet("subtraction/{firstNumber}/{secondNumber}")]
         public IActionResult Subtraction(string firstNumber, string secondNumber)
         {
-            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber))
-            {
-                var subtraction = _mathService.Subtract(
-                    NumberHelper.ConvertToDecimal(firstNumber),
-                    NumberHelper.ConvertToDecimal(secondNumber));
-                return Ok(subtraction.ToString());
-            }
+            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber)) {
 
-            return BadRequest("Invalid Input");
-        }
-
-        [HttpGet("division/{firstNumber}/{secondNumber}")]
-        public IActionResult Division(string firstNumber, string secondNumber)
-        {
-            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber))
-            {
-                var division = _mathService.Division(
+                var subtraction = _service.Subtraction(
                     NumberHelper.ConvertToDecimal(firstNumber),
                     NumberHelper.ConvertToDecimal(secondNumber)
                 );
-                return Ok(division.ToString());
+
+                return Ok(subtraction);
             }
-            return Ok("Invalid Input");
+            return BadRequest("Invalid Input!");
         }
 
         [HttpGet("multiplication/{firstNumber}/{secondNumber}")]
         public IActionResult Multiplication(string firstNumber, string secondNumber)
         {
-            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber))
-            {
-                var multiplication = _mathService.Multiply(
+            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber)) {
+                var multiplication = _service.Multiplication(
                     NumberHelper.ConvertToDecimal(firstNumber),
                     NumberHelper.ConvertToDecimal(secondNumber)
                 );
-                return Ok(multiplication.ToString());
+                return Ok(multiplication);
             }
-            return Ok("Invalid Input");
+            return BadRequest("Invalid Input!");
         }
 
-        [HttpGet("mean/{firstNumber}/{secondNumber}")]
-        public IActionResult Mean(string firstNumber, string secondNumber)
+        [HttpGet("division/{firstNumber}/{secondNumber}")]
+        public IActionResult Division(string firstNumber, string secondNumber)
         {
-            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber))
-            {
-                var mean = _mathService.Mean(
+            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber)) {
+                var division = _service.Division(
                     NumberHelper.ConvertToDecimal(firstNumber),
                     NumberHelper.ConvertToDecimal(secondNumber)
                 );
-                return Ok(mean.ToString());
+                return Ok(division);
             }
-            return Ok("Invalid Input");
+            return BadRequest("Invalid Input!");
         }
 
         [HttpGet("square-root/{number}")]
@@ -91,12 +74,29 @@ namespace RestWithASPNET10Erudio.Controllers
         {
             if (NumberHelper.IsNumeric(number))
             {
-                var squareRoot = _mathService.SquareRoot(
+                var sqrt = _service.SquareRoot(
                     NumberHelper.ConvertToDecimal(number)
-                    );
-                return Ok(squareRoot.ToString());
+                );
+                return Ok(sqrt);
             }
-            return Ok("Invalid Input");
+            return BadRequest("Invalid Input!");
         }
+
+
+        [HttpGet("mean/{firstNumber}/{secondNumber}")]
+        public IActionResult Mean(string firstNumber, string secondNumber)
+        {
+            if (NumberHelper.IsNumeric(firstNumber) && NumberHelper.IsNumeric(secondNumber))
+            {
+                var sum = _service.Mean(
+                    NumberHelper.ConvertToDecimal(firstNumber),
+                    NumberHelper.ConvertToDecimal(secondNumber)
+                );
+                return Ok(sum);
+            }
+            return BadRequest("Invalid Input!");
+        }
+
+       
     }
 }
