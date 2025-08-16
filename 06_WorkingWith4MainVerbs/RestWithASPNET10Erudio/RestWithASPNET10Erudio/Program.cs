@@ -1,4 +1,5 @@
 using RestWithASPNET10Erudio.Services;
+using RestWithASPNET10Erudio.Services.Impl;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,10 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Register MathService for dependency injection
 builder.Services.AddSingleton<MathService>();
-
-// ou AddScoped se preferir criar uma instância por request
+builder.Services.AddScoped<IPersonServices, PersonServicesImpl>();
 
 var app = builder.Build();
 
