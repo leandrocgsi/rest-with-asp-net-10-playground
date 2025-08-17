@@ -1,18 +1,18 @@
 ﻿using RestWithASPNET10Erudio.Model;
 using RestWithASPNET10Erudio.Model.Context;
-using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace RestWithASPNET10Erudio.Services.Impl
 {
     public class PersonServicesImpl : IPersonServices
     {
-        private readonly MSSQLContext _context;
+
+        private MSSQLContext _context;
 
         public PersonServicesImpl(MSSQLContext context)
         {
             _context = context;
         }
-
         public List<Person> FindAll()
         {
             return _context.Persons.ToList();
@@ -33,29 +33,18 @@ namespace RestWithASPNET10Erudio.Services.Impl
         public Person Update(Person person)
         {
             var existingPerson = _context.Persons.Find(person.Id);
-
             if (existingPerson == null) return null;
 
             _context.Entry(existingPerson).CurrentValues.SetValues(person);
             _context.SaveChanges();
-
-            return existingPerson;
+            return person;
         }
-
         public void Delete(long id)
         {
             var existingPerson = _context.Persons.Find(id);
-
-            if (existingPerson == null)
-                return;
-
-            _context.Persons.Remove(existingPerson);
+            if (existingPerson == null) return;
+            _context.Remove(existingPerson);
             _context.SaveChanges();
-        }
-
-        private bool Exists(long? id)
-        {
-            return _context.Persons.Any(p => p.Id == id);
         }
     }
 }

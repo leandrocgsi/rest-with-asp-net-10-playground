@@ -9,13 +9,14 @@ namespace RestWithASPNET10Erudio.Configurations
             this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration["MSSQLServerSQLConnection:MSSQLServerSQLConnectionString"];
-
+            
             if (string.IsNullOrEmpty(connectionString))
-                throw new InvalidOperationException("Database connection string is not configured.");
+            {
+                throw new ArgumentNullException("Connection string 'MSSQLServerSQLConnectionString' not found.");
+            }
 
             services.AddDbContext<MSSQLContext>(options =>
                 options.UseSqlServer(connectionString));
-
             return services;
         }
     }
