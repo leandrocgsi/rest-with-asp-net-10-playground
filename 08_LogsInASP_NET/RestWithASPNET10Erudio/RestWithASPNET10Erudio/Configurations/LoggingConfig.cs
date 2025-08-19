@@ -2,8 +2,9 @@
 
 namespace RestWithASPNET10Erudio.Configurations
 {
-    public static class LoggingConfigs
+    public static class LoggingConfig
     {
+
         public static void AddSerilogLogging(this WebApplicationBuilder builder)
         {
             Log.Logger = new LoggerConfiguration()
