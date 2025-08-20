@@ -24,7 +24,7 @@ namespace RestWithASPNET10Erudio.Services.Impl
         }
 
         public Person Create(Person person)
-        {            
+        {
             return _repository.Create(person);
         }
 

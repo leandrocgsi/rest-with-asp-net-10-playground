@@ -3,12 +3,12 @@ using RestWithASPNET10Erudio.Model.Context;
 
 namespace RestWithASPNET10Erudio.Repositories.Impl
 {
-    public class PersonRepositoryImpl : IPersonRepository
+    public class PersonRepository : IPersonRepository
     {
 
         private MSSQLContext _context;
 
-        public PersonRepositoryImpl(MSSQLContext context)
+        public PersonRepository(MSSQLContext context)
         {
             _context = context;
         }
