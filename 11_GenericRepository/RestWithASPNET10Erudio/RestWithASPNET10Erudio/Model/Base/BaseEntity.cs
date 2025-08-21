@@ -11,4 +11,3 @@ namespace RestWithASPNET10Erudio.Model.Base
         public long Id { get; set; }
     }
 }
-

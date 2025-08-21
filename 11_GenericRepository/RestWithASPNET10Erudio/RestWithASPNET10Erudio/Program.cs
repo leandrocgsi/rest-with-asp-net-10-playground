@@ -1,36 +1,31 @@
 using RestWithASPNET10Erudio.Configurations;
 using RestWithASPNET10Erudio.Repositories;
+using RestWithASPNET10Erudio.Repositories.Impl;
 using RestWithASPNET10Erudio.Services;
 using RestWithASPNET10Erudio.Services.Impl;
 
-public partial class Program
-{
-    private static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-        builder.AddSerilogLogging();
+builder.AddSerilogLogging();
 
-        builder.Services.AddControllers();
+builder.Services.AddControllers();
 
-        builder.Services.AddDatabaseConfiguration(builder.Configuration);
-        builder.Services.AddEvolveConfiguration(builder.Configuration, builder.Environment);
+builder.Services.AddDatabaseConfiguration(builder.Configuration);
+builder.Services.AddEvolveConfiguration(builder.Configuration, builder.Environment);
 
-        builder.Services.AddScoped<IPersonServices, PersonServicesImpl>();
-        builder.Services.AddScoped<IBookServices, BookServicesImpl>();
+builder.Services.AddScoped<IPersonServices, PersonServicesImpl>();
+builder.Services.AddScoped<IBookServices, BookServicesImpl>();
 
-        builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
-        var app = builder.Build();
+var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline.
 
-        app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
-        app.UseAuthorization();
+app.UseAuthorization();
 
-        app.MapControllers();
+app.MapControllers();
 
-        app.Run();
-    }
-}
+app.Run();

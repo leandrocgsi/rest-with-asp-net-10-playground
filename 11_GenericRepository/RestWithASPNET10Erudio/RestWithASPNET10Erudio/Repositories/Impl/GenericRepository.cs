@@ -2,7 +2,7 @@
 using RestWithASPNET10Erudio.Model.Base;
 using RestWithASPNET10Erudio.Model.Context;
 
-namespace RestWithASPNET10Erudio.Repositories
+namespace RestWithASPNET10Erudio.Repositories.Impl
 {
     public class GenericRepository<T> : IRepository<T> where T : BaseEntity
     {
@@ -13,7 +13,7 @@ namespace RestWithASPNET10Erudio.Repositories
         public GenericRepository(MSSQLContext context)
         {
             _context = context;
-            _dataset = _context.Set<T>();
+            _dataset = context.Set<T>();
         }
 
         public List<T> FindAll()
@@ -42,7 +42,6 @@ namespace RestWithASPNET10Erudio.Repositories
             _context.SaveChanges();
             return item;
         }
-
         public void Delete(long id)
         {
             var existingItem = _dataset.Find(id);
@@ -53,7 +52,7 @@ namespace RestWithASPNET10Erudio.Repositories
 
         public bool Exists(long id)
         {
-            return _dataset.Any(b => b.Id.Equals(id));
+            return _dataset.Any(e => e.Id == id);
         }
     }
 }
