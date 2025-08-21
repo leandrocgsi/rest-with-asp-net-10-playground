@@ -12,6 +12,7 @@ namespace RestWithASPNET10Erudio.Repositories.Impl
         {
             _context = context;
         }
+
         public List<Person> FindAll()
         {
             return _context.Persons.ToList();
