@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO;
+using RestWithASPNET10Erudio.Model;
 using RestWithASPNET10Erudio.Services;
 
 namespace RestWithASPNET10Erudio.Controllers

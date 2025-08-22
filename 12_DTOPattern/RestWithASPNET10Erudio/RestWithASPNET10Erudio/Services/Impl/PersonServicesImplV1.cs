@@ -27,16 +27,16 @@ namespace RestWithASPNET10Erudio.Services.Impl
             return _converter.Parse(_repository.FindById(id));
         }
 
-        public PersonDTO Create(PersonDTO personDTO)
+        public PersonDTO Create(PersonDTO person)
         {
-            var entity = _converter.Parse(personDTO);
+            var entity = _converter.Parse(person);
             entity = _repository.Create(entity);
             return _converter.Parse(entity);
         }
 
-        public PersonDTO Update(PersonDTO personDTO)
+        public PersonDTO Update(PersonDTO person)
         {
-            var entity = _converter.Parse(personDTO);
+            var entity = _converter.Parse(person);
             entity = _repository.Update(entity);
             return _converter.Parse(entity);
         }

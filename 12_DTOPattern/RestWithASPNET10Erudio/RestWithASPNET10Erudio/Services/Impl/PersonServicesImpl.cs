@@ -9,7 +9,6 @@ namespace RestWithASPNET10Erudio.Services.Impl
     {
 
         private IRepository<Person> _repository;
-
         public PersonServicesImpl(IRepository<Person> repository)
         {
             _repository = repository;
@@ -25,16 +24,16 @@ namespace RestWithASPNET10Erudio.Services.Impl
             return _repository.FindById(id).Adapt<PersonDTO>();
         }
 
-        public PersonDTO Create(PersonDTO personDTO)
+        public PersonDTO Create(PersonDTO person)
         {
-            var entity = personDTO.Adapt<Person>();
+            var entity = person.Adapt<Person>();
             entity = _repository.Create(entity);
             return entity.Adapt<PersonDTO>();
         }
 
-        public PersonDTO Update(PersonDTO personDTO)
+        public PersonDTO Update(PersonDTO person)
         {
-            var entity = personDTO.Adapt<Person>();
+            var entity = person.Adapt<Person>();
             entity = _repository.Update(entity);
             return entity.Adapt<PersonDTO>();
         }

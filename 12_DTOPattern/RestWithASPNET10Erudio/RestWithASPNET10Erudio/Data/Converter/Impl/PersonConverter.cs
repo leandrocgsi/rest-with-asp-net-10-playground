@@ -34,15 +34,14 @@ namespace RestWithASPNET10Erudio.Data.Converter.Impl
 
         public List<Person> ParseList(List<PersonDTO> origin)
         {
-            if (origin == null) return new List<Person>();
+            if (origin == null) return null;
             return origin.Select(item => Parse(item)).ToList();
         }
 
         public List<PersonDTO> ParseList(List<Person> origin)
         {
-            if (origin == null) return new List<PersonDTO>();
+            if (origin == null) return null;
             return origin.Select(item => Parse(item)).ToList();
         }
     }
-
 }
