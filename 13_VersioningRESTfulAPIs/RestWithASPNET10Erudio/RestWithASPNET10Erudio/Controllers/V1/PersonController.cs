@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using RestWithASPNET10Erudio.Data.DTO;
-using RestWithASPNET10Erudio.Model;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
+using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Services;
 
-namespace RestWithASPNET10Erudio.Controllers
+namespace RestWithASPNET10Erudio.Controllers.V1
 {
+
+    [ApiVersion("1", Deprecated = true)]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/person/v{version:apiVersion}")]
+
     public class PersonController : ControllerBase
     {
         private IPersonServices _personService;
@@ -40,6 +43,7 @@ namespace RestWithASPNET10Erudio.Controllers
         }
 
         [HttpPost]
+        [MapToApiVersion("1")]
         public IActionResult Post([FromBody] PersonDTO person)
         {
             _logger.LogInformation("Creating new Person: {firstName}", person.FirstName);

@@ -1,5 +1,5 @@
 ﻿using RestWithASPNET10Erudio.Data.Converter.Contract;
-using RestWithASPNET10Erudio.Data.DTO;
+using RestWithASPNET10Erudio.Data.DTO.V2;
 using RestWithASPNET10Erudio.Model;
 
 namespace RestWithASPNET10Erudio.Data.Converter.Impl
@@ -15,7 +15,8 @@ namespace RestWithASPNET10Erudio.Data.Converter.Impl
                 FirstName = origin.FirstName,
                 LastName = origin.LastName,
                 Address = origin.Address,
-                Gender = origin.Gender
+                Gender = origin.Gender,
+                BirthDay = origin.BirthDay 
             };
         }
 
@@ -28,7 +29,8 @@ namespace RestWithASPNET10Erudio.Data.Converter.Impl
                 FirstName = origin.FirstName,
                 LastName = origin.LastName,
                 Address = origin.Address,
-                Gender = origin.Gender
+                Gender = origin.Gender,
+                BirthDay = origin.BirthDay ?? DateTime.Now
             };
         }
 
