@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSerilogLogging();
 
-builder.Services.AddApiVersioningConfiguration();
+// builder.Services.AddApiVersioningConfiguration();
 
 builder.Services.AddControllers();
 
@@ -36,7 +36,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseSwaggerSpecification();
 
+app.UseSwaggerSpecification();
 
 app.Run();
