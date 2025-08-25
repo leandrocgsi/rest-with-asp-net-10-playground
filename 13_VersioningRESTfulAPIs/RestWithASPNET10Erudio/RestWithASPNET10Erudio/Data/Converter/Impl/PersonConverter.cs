@@ -16,7 +16,7 @@ namespace RestWithASPNET10Erudio.Data.Converter.Impl
                 LastName = origin.LastName,
                 Address = origin.Address,
                 Gender = origin.Gender,
-                BirthDay = origin.BirthDay 
+                // BirthDay = origin.BirthDay 
             };
         }
 
@@ -30,7 +30,8 @@ namespace RestWithASPNET10Erudio.Data.Converter.Impl
                 LastName = origin.LastName,
                 Address = origin.Address,
                 Gender = origin.Gender,
-                BirthDay = origin.BirthDay ?? DateTime.Now
+                BirthDay = DateTime.Now
+                //BirthDay = origin.BirthDay ?? DateTime.Now
             };
         }
 

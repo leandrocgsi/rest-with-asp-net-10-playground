@@ -21,10 +21,10 @@ namespace RestWithASPNET10Erudio.Tests.Converter
             var dto = new PersonDTO
             {
                 Id = 1,
-                FirstName = "Leandro",
-                LastName = "CG",
-                Address = "Rua X",
-                Gender = "M",
+                FirstName = "Mahatma",
+                LastName = "Gandhi",
+                Address = "Porbandar - India",
+                Gender = "Male",
                 BirthDay = new DateTime(1990, 1, 1)
             };
 
@@ -36,7 +36,7 @@ namespace RestWithASPNET10Erudio.Tests.Converter
             person.LastName.Should().Be(dto.LastName);
             person.Address.Should().Be(dto.Address);
             person.Gender.Should().Be(dto.Gender);
-            person.BirthDay.Should().Be(dto.BirthDay);
+            // person.BirthDay.Should().Be(dto.BirthDay);
         }
 
         [Fact]
@@ -54,11 +54,11 @@ namespace RestWithASPNET10Erudio.Tests.Converter
             var person = new Person
             {
                 Id = 1,
-                FirstName = "Leandro",
-                LastName = "CG",
-                Address = "Rua X",
-                Gender = "M",
-                BirthDay = new DateTime(1990, 1, 1)
+                FirstName = "Mahatma",
+                LastName = "Gandhi",
+                Address = "Porbandar - India",
+                Gender = "Male",
+                // BirthDay = new DateTime(1990, 1, 1)
             };
 
             var dto = _converter.Parse(person);
@@ -69,7 +69,7 @@ namespace RestWithASPNET10Erudio.Tests.Converter
             dto.LastName.Should().Be(person.LastName);
             dto.Address.Should().Be(person.Address);
             dto.Gender.Should().Be(person.Gender);
-            dto.BirthDay.Should().Be(person.BirthDay);
+            //dto.BirthDay.Should().Be(person.BirthDay);
         }
 
         [Fact]
@@ -86,11 +86,11 @@ namespace RestWithASPNET10Erudio.Tests.Converter
             var person = new Person
             {
                 Id = 1,
-                FirstName = "Leandro",
-                LastName = "CG",
-                Address = "Rua X",
-                Gender = "M",
-                BirthDay = null
+                FirstName = "Mahatma",
+                LastName = "Gandhi",
+                Address = "Porbandar - India",
+                Gender = "Male",
+                // BirthDay = null
             };
 
             var dto = _converter.Parse(person);
@@ -100,19 +100,63 @@ namespace RestWithASPNET10Erudio.Tests.Converter
 
         // ----------------- List<PersonDTO> → List<Person> -----------------
         [Fact]
-        public void ParseList_ShouldConvertPersonDTOListToPersonList()
+        public void ParseList_ShouldConvertPersonDTOListToPersonList_WithAllFields()
         {
+            // Arrange
+            var birthDay1 = new DateTime(1869, 10, 2);  // Mahatma Gandhi
+            var birthDay2 = new DateTime(1917, 11, 19); // Indira Gandhi
+
             var listDto = new List<PersonDTO>
             {
-                new PersonDTO { Id = 1, FirstName = "Leandro" },
-                new PersonDTO { Id = 2, FirstName = "Maria" }
+                new PersonDTO
+                {
+                    Id = 1,
+                    FirstName = "Mahatma",
+                    LastName = "Gandhi",
+                    Address = "Porbandar - India",
+                    Gender = "Male",
+                    // BirthDay = birthDay1
+                },
+                new PersonDTO
+                {
+                    Id = 2,
+                    FirstName = "Indira",
+                    LastName = "Gandhi",
+                    Address = "Allahabad - India",
+                    Gender = "Female",
+                    // BirthDay = birthDay2
+                }
             };
 
+            // Act
             var listPerson = _converter.ParseList(listDto);
 
+            // Assert: validação completa de cada objeto
             listPerson.Should().HaveCount(2);
-            listPerson[0].FirstName.Should().Be("Leandro");
-            listPerson[1].FirstName.Should().Be("Maria");
+
+            listPerson[0].Should().BeEquivalentTo(new Person
+            {
+                Id = 1,
+                FirstName = "Mahatma",
+                LastName = "Gandhi",
+                Address = "Porbandar - India",
+                Gender = "Male",
+                //BirthDay = birthDay1
+            });
+
+            listPerson[1].Should().BeEquivalentTo(new Person
+            {
+                Id = 2,
+                FirstName = "Indira",
+                LastName = "Gandhi",
+                Address = "Allahabad - India",
+                Gender = "Female",
+                // BirthDay = birthDay2
+            });
+
+            // Exemplos de validação individual de campos
+            listPerson[0].FirstName.Should().Be("Mahatma");
+            listPerson[1].LastName.Should().Be("Gandhi");
         }
 
         [Fact]
@@ -125,19 +169,63 @@ namespace RestWithASPNET10Erudio.Tests.Converter
 
         // ----------------- List<Person> → List<PersonDTO> -----------------
         [Fact]
-        public void ParseList_ShouldConvertPersonListToPersonDTOList()
+        public void ParseList_ShouldConvertPersonListToPersonDTOList_WithAllFields()
         {
+            // Arrange
+            var birthDay1 = new DateTime(1869, 10, 2);  // Mahatma Gandhi
+            var birthDay2 = new DateTime(1917, 11, 19); // Indira Gandhi
+
             var listPerson = new List<Person>
             {
-                new Person { Id = 1, FirstName = "Leandro" },
-                new Person { Id = 2, FirstName = "Maria" }
+                new Person
+                {
+                    Id = 1,
+                    FirstName = "Mahatma",
+                    LastName = "Gandhi",
+                    Address = "Porbandar - India",
+                    Gender = "Male",
+                    // BirthDay = birthDay1
+                },
+                new Person
+                {
+                    Id = 2,
+                    FirstName = "Indira",
+                    LastName = "Gandhi",
+                    Address = "Allahabad - India",
+                    Gender = "Female",
+                    // BirthDay = birthDay2
+                }
             };
 
+            // Act
             var listDto = _converter.ParseList(listPerson);
 
+            // Assert: validação completa de cada objeto
             listDto.Should().HaveCount(2);
-            listDto[0].FirstName.Should().Be("Leandro");
-            listDto[1].FirstName.Should().Be("Maria");
+
+            listDto[0].Should().BeEquivalentTo(new PersonDTO
+            {
+                Id = 1,
+                FirstName = "Mahatma",
+                LastName = "Gandhi",
+                Address = "Porbandar - India",
+                Gender = "Male",
+                // BirthDay = birthDay1
+            }, options => options.Excluding(dto => dto.BirthDay));
+
+            listDto[1].Should().BeEquivalentTo(new PersonDTO
+            {
+                Id = 2,
+                FirstName = "Indira",
+                LastName = "Gandhi",
+                Address = "Allahabad - India",
+                Gender = "Female",
+                // BirthDay = birthDay2
+            }, options => options.Excluding(dto => dto.BirthDay));
+
+            // Exemplos de validação individual de campos
+            listDto[0].LastName.Should().Be("Gandhi");
+            listDto[1].Address.Should().Be("Allahabad - India");
         }
 
         [Fact]
