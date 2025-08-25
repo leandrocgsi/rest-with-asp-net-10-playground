@@ -8,8 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSerilogLogging();
 
-builder.Services.AddApiVersioningConfiguration();
-
 builder.Services.AddControllers();
 
 // Minimal OpenAPI
