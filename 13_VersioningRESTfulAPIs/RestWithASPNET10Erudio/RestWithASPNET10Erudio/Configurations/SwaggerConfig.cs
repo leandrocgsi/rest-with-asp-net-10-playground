@@ -4,22 +4,31 @@ namespace RestWithASPNET10Erudio.Configurations
 {
     public static class SwaggerSpecification
     {
+        private static readonly string AppName =
+            "ASP.NET 2026 REST API's from 0 to Azure and GCP with .NET 10, Docker e Kubernetes";
+
+        private static readonly string AppDescription =
+            $"REST API RESTful developed in course '{AppName}'";
+
         public static IServiceCollection AddSwaggerSpecification(this IServiceCollection services)
         {
-            var provider = services.BuildServiceProvider();
-            var openApiInfo = provider.GetRequiredService<OpenApiInfo>();
-
-            // Registra SwaggerGen com os dados do OpenAPI
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "API V1", Version = "v1" });
-                c.SwaggerDoc("v2", new OpenApiInfo { Title = "API V2", Version = "v2" });
-                
-                c.CustomSchemaIds(type =>
+                options.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    // inclui namespace e nome da classe
-                    return type.FullName.Replace("+", ".");
+                    Title = AppName,
+                    Version = "v1",
+                    Description = AppDescription,
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Erudio Training",
+                        Email = "contato@erudio.com.br",
+                        Url = new Uri("https://pub.erudio.com.br/meus-cursos")
+                    }
                 });
+
+                // evita conflitos de nomes em DTOs
+                options.CustomSchemaIds(type => type.FullName);
             });
 
             return services;
@@ -27,14 +36,13 @@ namespace RestWithASPNET10Erudio.Configurations
 
         public static IApplicationBuilder UseSwaggerSpecification(this IApplicationBuilder app)
         {
-            // JSON do Swagger em /swagger/v1/swagger.json
             app.UseSwagger();
 
-            // UI em /swagger-ui
-            app.UseSwaggerUI(c =>
+            app.UseSwaggerUI(options =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sua API V1");
-                c.RoutePrefix = "swagger-ui";
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", $"{AppName} v1");
+                options.RoutePrefix = "swagger-ui";
+                options.DocumentTitle = AppName;
             });
 
             return app;

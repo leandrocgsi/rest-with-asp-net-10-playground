@@ -1,4 +1,5 @@
-﻿/**
+﻿using Asp.Versioning;
+
 namespace RestWithASPNET10Erudio.Configurations
 {
     public static class ApiVersioningConfig
@@ -25,9 +26,9 @@ namespace RestWithASPNET10Erudio.Configurations
                 setup.GroupNameFormat = "'v'VVV"; // v1, v2
                 setup.SubstituteApiVersionInUrl = true;
             });
+            */
 
             return services;
         }
     }
 }
-*/

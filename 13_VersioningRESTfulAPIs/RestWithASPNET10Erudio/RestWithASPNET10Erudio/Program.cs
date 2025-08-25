@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSerilogLogging();
 
-// builder.Services.AddApiVersioningConfiguration();
+builder.Services.AddApiVersioningConfiguration();
 
 builder.Services.AddControllers();
 
@@ -16,7 +16,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiSpecification();
 builder.Services.AddSwaggerSpecification();
-//builder.Services.AddScalarConfiguration();
 
 builder.Services.AddDatabaseConfiguration(builder.Configuration);
 builder.Services.AddEvolveConfiguration(builder.Configuration, builder.Environment);
@@ -38,5 +37,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseSwaggerSpecification();
+app.UseScalarConfiguration();
 
 app.Run();

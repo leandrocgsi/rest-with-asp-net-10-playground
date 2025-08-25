@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Services;
 
 namespace RestWithASPNET10Erudio.Controllers.V1
 {
 
-    //[ApiVersion("1", Deprecated = true)]
+    [ApiVersion("1", Deprecated = true)]
     [ApiController]
     [Route("api/person/v1")]
 
@@ -42,7 +43,7 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         }
 
         [HttpPost]
-        //[MapToApiVersion("1")]
+        [MapToApiVersion("1")]
         public IActionResult Post([FromBody] PersonDTO person)
         {
             _logger.LogInformation("Creating new Person: {firstName}", person.FirstName);

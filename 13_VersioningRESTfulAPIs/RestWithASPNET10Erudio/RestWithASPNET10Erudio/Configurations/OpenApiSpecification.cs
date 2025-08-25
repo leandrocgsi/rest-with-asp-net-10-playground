@@ -12,7 +12,6 @@ namespace RestWithASPNET10Erudio.Configurations
 
         public static IServiceCollection AddOpenApiSpecification(this IServiceCollection services)
         {
-            // Apenas dados que podem ser compartilhados
             services.AddSingleton(new OpenApiInfo
             {
                 Title = AppName,
@@ -21,7 +20,7 @@ namespace RestWithASPNET10Erudio.Configurations
                 Contact = new OpenApiContact
                 {
                     Name = "Leandro Costa",
-                    Url = new Uri("https://github.com/leandrocgsi")
+                    Url = new Uri("https://pub.erudio.com.br/meus-cursos")
                 }
             });
 
