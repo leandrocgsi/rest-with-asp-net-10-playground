@@ -5,25 +5,26 @@ using RestWithASPNET10Erudio.Services.Impl;
 namespace RestWithASPNET10Erudio.Controllers.V2
 {
     [ApiController]
-    [Route("api/person/v2")]
+    [Route("api/[controller]/v2")]
     public class PersonController : ControllerBase
     {
-        private readonly PersonServicesImplV2 _service;
+        private PersonServicesImplV2 _personService;
         private readonly ILogger<PersonController> _logger;
 
-        public PersonController(PersonServicesImplV2 service,
+        public PersonController(PersonServicesImplV2 personService,
             ILogger<PersonController> logger)
         {
-            _service = service;
+            _personService = personService;
             _logger = logger;
         }
 
+        
         [HttpPost]
-        public IActionResult Create([FromBody] PersonDTO person)
+        public IActionResult Post([FromBody] PersonDTO person)
         {
             _logger.LogInformation("Creating new Person: {firstName}", person.FirstName);
 
-            var createdPerson = _service.Create(person);
+            var createdPerson = _personService.Create(person);
             if (createdPerson == null)
             {
                 _logger.LogError("Failed to create person with name {firstName}", person.FirstName);

@@ -16,7 +16,7 @@ namespace RestWithASPNET10Erudio.Data.Converter.Impl
                 LastName = origin.LastName,
                 Address = origin.Address,
                 Gender = origin.Gender,
-                // BirthDay = origin.BirthDay 
+                // BirthDay = origin.BirthDay
             };
         }
 
@@ -31,6 +31,7 @@ namespace RestWithASPNET10Erudio.Data.Converter.Impl
                 Address = origin.Address,
                 Gender = origin.Gender,
                 BirthDay = DateTime.Now
+                // Mocking a birthday since the Person entity does not have this field.
                 //BirthDay = origin.BirthDay ?? DateTime.Now
             };
         }

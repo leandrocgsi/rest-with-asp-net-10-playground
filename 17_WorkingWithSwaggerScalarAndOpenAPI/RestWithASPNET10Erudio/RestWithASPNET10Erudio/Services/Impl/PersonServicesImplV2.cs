@@ -7,7 +7,8 @@ namespace RestWithASPNET10Erudio.Services.Impl
 {
     public class PersonServicesImplV2
     {
-        private readonly IRepository<Person> _repository;
+
+        private IRepository<Person> _repository;
         private readonly PersonConverter _converter;
 
         public PersonServicesImplV2(IRepository<Person> repository)
@@ -16,13 +17,12 @@ namespace RestWithASPNET10Erudio.Services.Impl
             _converter = new PersonConverter();
         }
 
+        
         public PersonDTO Create(PersonDTO person)
         {
             var entity = _converter.Parse(person);
             entity = _repository.Create(entity);
-            var dto = _converter.Parse(entity);
-
-            return dto;
+            return _converter.Parse(entity);
         }
     }
 }
