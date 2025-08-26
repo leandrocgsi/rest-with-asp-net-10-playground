@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
+using RestWithASPNET10Erudio.Model;
 using RestWithASPNET10Erudio.Services;
 
 namespace RestWithASPNET10Erudio.Controllers.V1
 {
     [ApiController]
-    [Route("api/[controller]/v1")]
+    [Route("api/[controller]")]
     public class BookController : ControllerBase
     {
         private IBookServices _bookService;
@@ -49,8 +50,6 @@ namespace RestWithASPNET10Erudio.Controllers.V1
                 _logger.LogError("Failed to create book with name {firstName}", book.Title);
                 return NotFound();
             }
-            Response.Headers.Add("X-API-Deprecated", "true");
-            Response.Headers.Add("X-API-Deprecation-Date", "2026-12-31");
             return Ok(createdBook);
         }
 

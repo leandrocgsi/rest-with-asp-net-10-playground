@@ -3,7 +3,7 @@
 namespace RestWithASPNET10Erudio.Controllers.V1
 {
     [ApiController]
-    [Route("api/[controller]/v1")]
+    [Route("api/[controller]")]
     public class TestLogsController : ControllerBase
     {
 
