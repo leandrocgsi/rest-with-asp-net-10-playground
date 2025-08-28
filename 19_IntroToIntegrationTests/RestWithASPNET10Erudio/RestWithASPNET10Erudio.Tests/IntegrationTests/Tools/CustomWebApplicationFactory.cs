@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using RestWithASPNET10Erudio.Model.Context;
+using Microsoft.Extensions.Configuration;
+using RestWithASPNET10Erudio.Configurations;
 
-namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
+namespace RestWithASPNET10Erudio.IntegrationTests
 {
-    internal class CustomWebApplicationFactory : WebApplicationFactory<Program>
+    public class CustomWebApplicationFactory<TProgram>
+        : WebApplicationFactory<TProgram> where TProgram : class
     {
         private readonly string _connectionString;
 
@@ -17,22 +17,22 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.UseEnvironment("Development"); // força Evolve a rodar
+            builder.ConfigureAppConfiguration((context, config) =>
+            {
+                var dict = new Dictionary<string, string?>
+                {
+                    {
+                        "MSSQLServerSQLConnection:MSSQLServerSQLConnectionString",
+                        _connectionString
+                    }
+                };
+                config.AddInMemoryCollection(dict!);
+            });
 
             builder.ConfigureServices(services =>
             {
-                // remove configuração original do contexto
-                var descriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(DbContextOptions<MSSQLContext>));
-
-                if (descriptor != null)
-                {
-                    services.Remove(descriptor);
-                }
-
-                // registra contexto usando o banco do container
-                services.AddDbContext<MSSQLContext>(options =>
-                    options.UseSqlServer(_connectionString));
+                // Executa as migrations no banco de teste (Testcontainers)
+                EvolveConfig.ExecuteMigrations(_connectionString);
             });
         }
     }

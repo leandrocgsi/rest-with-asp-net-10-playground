@@ -1,22 +1,24 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RestWithASPNET10Erudio.Data.DTO.V1;
+using RestWithASPNET10Erudio.IntegrationTests;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
 using System.Net.Http.Json;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests
 {
-
     public class PersonApiIntegrationTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
 
         public PersonApiIntegrationTests(SqlServerFixture fixture)
         {
-            var factory = new CustomWebApplicationFactory(fixture.ConnectionString);
+            // 🔵 Usa a CustomWebApplicationFactory já configurada com a connection string do container
+            var factory = new CustomWebApplicationFactory<Program>(fixture.ConnectionString);
+
             _httpClient = factory.CreateClient(new WebApplicationFactoryClientOptions
             {
-                BaseAddress = new Uri("http://localhost") // não precisa de 5000, o TestServer resolve
+                BaseAddress = new Uri("http://localhost") // TestServer resolve internamente
             });
         }
 
