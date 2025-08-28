@@ -9,9 +9,18 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      docker:
-        image: docker:20.10-dind
-        options: --privileged
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        ports:
+          - 1433:1433
+        env:
+          ACCEPT_EULA: "Y"
+          SA_PASSWORD: "@Your_password123!"
+        options: >-
+          --health-cmd "until /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P @Your_password123! -Q 'select 1' > /dev/null 2>&1; do sleep 1; done"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Checkout repository
@@ -22,8 +31,11 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Pre-pull SQL Server image
+        run: docker pull mcr.microsoft.com/mssql/server:2022-latest
+
       - name: Verify Docker
-        run: docker info
+        run: docker ps -a
 
       - name: Restore dependencies
         run: dotnet restore
