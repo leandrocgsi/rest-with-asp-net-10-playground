@@ -2,7 +2,7 @@ name: Integration Tests
 
 on:
   push:
-    branches: main
+    branches: [main]
 
 jobs:
   test:
@@ -21,13 +21,13 @@ jobs:
         run: docker info
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore RestWithASPNET10Erudio.sln
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build RestWithASPNET10Erudio.sln --configuration Release --no-restore
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        run: dotnet test RestWithASPNET10Erudio.sln --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
