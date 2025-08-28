@@ -13,7 +13,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests
 
         public PersonApiIntegrationTests(SqlServerFixture fixture)
         {
-            // 🔵 Usa a CustomWebApplicationFactory já configurada com a connection string do container
+            // Usa a CustomWebApplicationFactory já configurada com a connection string do container
             var factory = new CustomWebApplicationFactory<Program>(fixture.ConnectionString);
 
             _httpClient = factory.CreateClient(new WebApplicationFactoryClientOptions
@@ -33,7 +33,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests
                 Gender = "Male"
             };
 
-            var response = await _httpClient.PostAsJsonAsync("api/person", request);
+            var response = await _httpClient.PostAsJsonAsync("api/person/v1", request);
             response.EnsureSuccessStatusCode();
 
             var person = await response.Content.ReadFromJsonAsync<PersonDTO>();
