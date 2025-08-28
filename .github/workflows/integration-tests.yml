@@ -8,6 +8,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      docker:
+        image: docker:20.10-dind
+        privileged: true
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,13 +26,13 @@ jobs:
         run: docker info
 
       - name: Restore dependencies
-        run: dotnet restore RestWithASPNET10Erudio.sln
+        run: dotnet restore
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
       - name: Build
-        run: dotnet build RestWithASPNET10Erudio.sln --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
       - name: Run tests
-        run: dotnet test RestWithASPNET10Erudio.sln --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
