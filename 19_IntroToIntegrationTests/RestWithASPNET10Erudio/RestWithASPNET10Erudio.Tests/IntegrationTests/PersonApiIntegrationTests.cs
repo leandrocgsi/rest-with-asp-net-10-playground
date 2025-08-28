@@ -4,7 +4,6 @@ using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.IntegrationTests;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
 using System.Net.Http.Json;
-using Xunit;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests
 {
