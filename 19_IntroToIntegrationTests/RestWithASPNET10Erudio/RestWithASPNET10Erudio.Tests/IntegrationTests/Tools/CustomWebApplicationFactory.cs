@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
-using RestWithASPNET10Erudio.Configurations;
 
 namespace RestWithASPNET10Erudio.IntegrationTests
 {
@@ -27,12 +26,6 @@ namespace RestWithASPNET10Erudio.IntegrationTests
                     }
                 };
                 config.AddInMemoryCollection(dict!);
-            });
-
-            builder.ConfigureServices(services =>
-            {
-                // Executa as migrations no banco de teste (Testcontainers)
-                EvolveConfig.ExecuteMigrations(_connectionString);
             });
         }
     }
