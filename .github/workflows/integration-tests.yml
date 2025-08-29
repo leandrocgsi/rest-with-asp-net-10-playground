@@ -102,6 +102,15 @@ jobs:
             /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" -C || true
         if: always()
 
+      - name: Debug test directory
+        run: |
+          docker run --rm --network test-network \
+            -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
+            -w /app \
+            mcr.microsoft.com/dotnet/sdk:10.0-preview \
+            ls -la
+        if: always()
+
       - name: Restore dependencies
         run: dotnet restore
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
