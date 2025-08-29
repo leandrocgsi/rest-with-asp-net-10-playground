@@ -110,14 +110,30 @@ jobs:
         run: dotnet build --configuration Release --no-restore
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
-      - name: Run tests
+      - name: Debug test environment
         run: |
-          # Executa os testes dentro da mesma rede do contêiner SQL Server
+          # Verifica o conteúdo do diretório montado
           docker run --rm --network test-network \
             -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
             -w /app \
             mcr.microsoft.com/dotnet/sdk:10.0-preview \
-            dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --blame-hang-timeout 3m
+            ls -la
+          # Verifica a versão do .NET SDK
+          docker run --rm --network test-network \
+            -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
+            -w /app \
+            mcr.microsoft.com/dotnet/sdk:10.0-preview \
+            dotnet --version
+        if: always()
+
+      - name: Run tests
+        run: |
+          # Executa os testes com saída detalhada
+          docker run --rm --network test-network \
+            -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
+            -w /app \
+            mcr.microsoft.com/dotnet/sdk:10.0-preview \
+            dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --blame-hang-timeout 3m --verbosity detailed
         env:
           SQL_SERVER_CONNECTION_STRING: "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True"
           ASPNETCORE_ENVIRONMENT: Test
