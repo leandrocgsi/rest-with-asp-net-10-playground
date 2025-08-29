@@ -110,18 +110,6 @@ jobs:
         run: dotnet build --configuration Release --no-restore
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
-      - name: Test .NET connection
-        run: |
-          # Testa a conexão .NET com o SQL Server
-          docker run --rm --network test-network \
-            -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
-            -w /app \
-            mcr.microsoft.com/dotnet/sdk:10.0-preview \
-            dotnet run --project RestWithASPNET10Erudio.Tests -- --connection-test
-        env:
-          SQL_SERVER_CONNECTION_STRING: "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True"
-        if: always()
-
       - name: Run tests
         run: |
           # Executa os testes dentro da mesma rede do contêiner SQL Server
@@ -133,18 +121,6 @@ jobs:
         env:
           SQL_SERVER_CONNECTION_STRING: "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True"
           ASPNETCORE_ENVIRONMENT: Test
-
-      - name: Restore dependencies
-        run: dotnet restore
-        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
-
-      - name: Run tests
-        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
-        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
       - name: Capture SQL Server logs
         run: docker logs sqlserver || true
