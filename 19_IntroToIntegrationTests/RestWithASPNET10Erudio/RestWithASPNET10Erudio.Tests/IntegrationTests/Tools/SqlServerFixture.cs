@@ -1,66 +1,70 @@
-﻿using RestWithASPNET10Erudio.Configurations;
+﻿using Microsoft.Extensions.Logging;
 using Testcontainers.MsSql;
-using Microsoft.Extensions.Logging;
+using RestWithASPNET10Erudio.Configurations;
 using Microsoft.Data.SqlClient;
 
-namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
+public class SqlServerFixture : IAsyncLifetime
 {
-    public class SqlServerFixture : IAsyncLifetime
+    private readonly ILogger<SqlServerFixture> _logger;
+
+    public MsSqlContainer Container { get; }
+
+    public string ConnectionString => Container.GetConnectionString();
+
+    public SqlServerFixture()
     {
-        private readonly ILogger<SqlServerFixture> _logger; // 🔵
-
-        public MsSqlContainer Container { get; }
-
-        public string ConnectionString => Container.GetConnectionString();
-
-        // 🔵 Adicionando construtor com logger
-        public SqlServerFixture(ILogger<SqlServerFixture> logger)
+        // 🔵 Cria um Logger simples
+        using var loggerFactory = LoggerFactory.Create(builder =>
         {
-            _logger = logger;
-            _logger.LogInformation("[SqlServerFixture] Construindo container SQL Server...");
+            builder.AddConsole();
+            builder.SetMinimumLevel(LogLevel.Information);
+        });
 
-            Container = new MsSqlBuilder()
-                .WithPassword("@Your_password123!")
-                .Build();
+        _logger = loggerFactory.CreateLogger<SqlServerFixture>();
 
-            _logger.LogInformation("[SqlServerFixture] Container construído.");
-        }
+        _logger.LogInformation("[SqlServerFixture] Construindo container SQL Server...");
 
-        public async Task InitializeAsync()
+        Container = new MsSqlBuilder()
+            .WithPassword("@Your_password123!")
+            .Build();
+
+        _logger.LogInformation("[SqlServerFixture] Container construído.");
+    }
+
+    public async Task InitializeAsync()
+    {
+        _logger.LogInformation("[SqlServerFixture] Iniciando container...");
+        await Container.StartAsync();
+        _logger.LogInformation("[SqlServerFixture] Container iniciado.");
+
+        _logger.LogInformation("[SqlServerFixture] Aguardando SQL Server estar pronto...");
+        var retries = 10;
+        while (retries > 0)
         {
-            _logger.LogInformation("[SqlServerFixture] Iniciando container...");
-            await Container.StartAsync();
-            _logger.LogInformation("[SqlServerFixture] Container iniciado.");
-
-            _logger.LogInformation("[SqlServerFixture] Aguardando SQL Server estar pronto para conexão...");
-            var retries = 10;
-            while (retries > 0)
+            try
             {
-                try
-                {
-                    using var conn = new SqlConnection(ConnectionString); // 🔵
-                    await conn.OpenAsync(); // 🔵
-                    _logger.LogInformation("[SqlServerFixture] Conexão com SQL Server estabelecida.");
-                    break;
-                }
-                catch
-                {
-                    _logger.LogWarning("[SqlServerFixture] SQL Server ainda não está pronto, aguardando 5 segundos...");
-                    await Task.Delay(5000);
-                    retries--;
-                }
+                using var conn = new SqlConnection(ConnectionString);
+                await conn.OpenAsync();
+                _logger.LogInformation("[SqlServerFixture] Conexão com SQL Server estabelecida.");
+                break;
             }
-
-            _logger.LogInformation("[SqlServerFixture] Executando migrations com Evolve...");
-            EvolveConfig.ExecuteMigrations(ConnectionString);
-            _logger.LogInformation("[SqlServerFixture] Migrations concluídas.");
+            catch
+            {
+                _logger.LogWarning("[SqlServerFixture] SQL Server ainda não está pronto, aguardando 5 segundos...");
+                await Task.Delay(5000);
+                retries--;
+            }
         }
 
-        public async Task DisposeAsync()
-        {
-            _logger.LogInformation("[SqlServerFixture] Descartando container...");
-            await Container.DisposeAsync();
-            _logger.LogInformation("[SqlServerFixture] Container descartado.");
-        }
+        _logger.LogInformation("[SqlServerFixture] Executando migrations com Evolve...");
+        EvolveConfig.ExecuteMigrations(ConnectionString);
+        _logger.LogInformation("[SqlServerFixture] Migrations concluídas.");
+    }
+
+    public async Task DisposeAsync()
+    {
+        _logger.LogInformation("[SqlServerFixture] Descartando container...");
+        await Container.DisposeAsync();
+        _logger.LogInformation("[SqlServerFixture] Container descartado.");
     }
 }
