@@ -36,7 +36,7 @@ jobs:
             mcr.microsoft.com/mssql/server:2022-latest
           # Aguarda até o SQL Server estar pronto (máximo de 180 segundos)
           for i in {1..180}; do
-            if docker run --rm --network test-network mcr.microsoft.com/mssql/tools:18.12.2 \
+            if docker run --rm --network test-network mcr.microsoft.com/mssql/tools:22.04 \
               /opt/mssql-tools/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT 1" > /dev/null 2>&1; then
               echo "SQL Server está pronto"
               break
@@ -54,7 +54,7 @@ jobs:
       - name: Verify SQL Server login
         run: |
           # Testa as credenciais do SA
-          docker run --rm --network test-network mcr.microsoft.com/mssql/tools:18.12.2 \
+          docker run --rm --network test-network mcr.microsoft.com/mssql/tools:22.04 \
             /opt/mssql-tools/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || {
               echo "Falha ao conectar com as credenciais do SA"
               docker logs sqlserver
@@ -68,13 +68,14 @@ jobs:
           docker network ls
           docker network inspect test-network || true
           # Testa conectividade com sqlserver
-          docker run --rm --network test-network mcr.microsoft.com/mssql/tools:18.12.2 \
+          docker run --rm --network test-network mcr.microsoft.com/mssql/tools:22.04 \
             /opt/mssql-tools/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || true
           # Testa resolução de hostname
-          docker run --rm --network test-network mcr.microsoft.com/mssql/tools:18.12.2 \
-            /bin/sh -c "ping -c 3 sqlserver || true"
+          docker run --rm --network test-network alpine \
+            ping -c 3 sqlserver || true
           # Testa conectividade do host
-          /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || true
+          docker run --rm --network test-network mcr.microsoft.com/mssql/tools:22.04 \
+            /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || true
         if: always()
 
       - name: Restore dependencies
