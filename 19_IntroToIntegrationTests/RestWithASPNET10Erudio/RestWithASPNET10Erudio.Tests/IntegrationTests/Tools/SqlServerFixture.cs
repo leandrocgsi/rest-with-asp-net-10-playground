@@ -1,86 +1,31 @@
-﻿using Microsoft.Data.SqlClient;
-using Polly;
-using Polly.Retry;
-using RestWithASPNET10Erudio.Configurations;
-using Serilog;
-using System;
+﻿using RestWithASPNET10Erudio.Configurations;
+using Testcontainers.MsSql;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 {
     public class SqlServerFixture : IAsyncLifetime
     {
-        public string ConnectionString { get; }
+        public MsSqlContainer Container { get; }
+
+        public string ConnectionString => Container.GetConnectionString();
 
         public SqlServerFixture()
         {
-            ConnectionString = Environment.GetEnvironmentVariable("SQL_SERVER_CONNECTION_STRING")
-                ?? "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True";
-            Log.Information("SqlServerFixture initialized with connection string: {ConnectionString}", ConnectionString);
+            Container = new MsSqlBuilder()
+                .WithPassword("@Admin123") // senha obrigatória para SQL Server
+                //.WithName("sqlserver-tests") // Opcional, para consistência com o workflow
+                .Build();
         }
 
         public async Task InitializeAsync()
         {
-            try
-            {
-                Log.Information("Starting SQL Server fixture initialization...");
-
-                // Create TestDb database
-                Log.Information("Creating TestDb database...");
-                using var connection = new SqlConnection(ConnectionString.Replace("Database=TestDb", "Database=master"));
-                try
-                {
-                    await connection.OpenAsync();
-                    using var command = new SqlCommand(
-                        "IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'TestDb') CREATE DATABASE TestDb;",
-                        connection);
-                    await command.ExecuteNonQueryAsync();
-                    Log.Information("TestDb database created or already exists.");
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Failed to create TestDb database.");
-                    throw;
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                // Retry migrations
-                await RetryPolicy.ExecuteAsync(async () =>
-                {
-                    Log.Information("Applying migrations to {Database}...", "TestDb");
-                    try
-                    {
-                        EvolveConfig.ExecuteMigrations(ConnectionString);
-                        Log.Information("Migrations applied successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "Failed to apply migrations.");
-                        throw;
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed to initialize SQL Server fixture.");
-                throw;
-            }
+            await Container.StartAsync();
+            EvolveConfig.ExecuteMigrations(ConnectionString);
         }
 
         public async Task DisposeAsync()
         {
-            Log.Information("SQL Server fixture disposed.");
-            await Task.CompletedTask;
+            await Container.DisposeAsync();
         }
-
-        private static readonly AsyncRetryPolicy RetryPolicy = Policy
-            .Handle<Exception>()
-            .WaitAndRetryAsync(7, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)),
-                (exception, timeSpan, retryCount, _) =>
-                {
-                    Log.Warning("Retry {RetryCount} after {TimeSpan} seconds due to: {Exception}", retryCount, timeSpan.TotalSeconds, exception.Message);
-                });
     }
 }
