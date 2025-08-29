@@ -11,7 +11,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests
     public class PersonApiIntegrationTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
-        private static PersonDTO _person;
+        private static PersonDTO? _person;
 
         public PersonApiIntegrationTests(SqlServerFixture fixture)
         {
