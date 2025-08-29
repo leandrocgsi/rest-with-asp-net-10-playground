@@ -3,6 +3,7 @@ using RestWithASPNET10Erudio.Configurations;
 using Serilog;
 using Polly.Retry;
 using Testcontainers.MsSql;
+using Polly;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 {
