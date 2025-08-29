@@ -18,8 +18,8 @@ jobs:
             -p 1433:1433 \
             mcr.microsoft.com/mssql/server:2022-latest
           
-          # Esperar até que o SQL Server esteja pronto (máximo 60 segundos)
-          timeout 60s bash -c "until docker exec sqlserver_test /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P '@Admin123' -Q 'SELECT 1'; do sleep 5; done"
+          # Esperar até que o SQL Server esteja pronto (máximo 90 segundos)
+          timeout 90s bash -c "until docker exec sqlserver_test /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P '@Admin123' -Q 'SELECT 1' -N disable; do sleep 5; done"
           
           # Verificar se o comando sqlcmd foi bem-sucedido
           if [ $? -eq 0 ]; then
