@@ -54,7 +54,7 @@ namespace RestWithASPNET10Erudio.Tests.UnitTests
         [Fact]
         public void Parse_NullPersonDTOShouldReturnNull()
         {
-            PersonDTO dto = null;
+            PersonDTO? dto = null;
             var person = _converter.Parse(dto);
             person.Should().BeNull();
         }
@@ -101,7 +101,7 @@ namespace RestWithASPNET10Erudio.Tests.UnitTests
         [Fact]
         public void Parse_NullPersonShouldReturnNull()
         {
-            Person dto = null;
+            Person? dto = null;
             var person = _converter.Parse(dto);
             person.Should().BeNull();
         }
@@ -164,7 +164,7 @@ namespace RestWithASPNET10Erudio.Tests.UnitTests
         [Fact]
         public void Parse_NullListPersonDTOShouldReturnNull()
         {
-            List<PersonDTO> dto = null;
+            List<PersonDTO>? dto = null;
             var listPerson = _converter.ParseList(dto);
             listPerson.Should().BeNull();
         }
@@ -229,7 +229,7 @@ namespace RestWithASPNET10Erudio.Tests.UnitTests
         [Fact]
         public void Parse_NullListPersonShouldReturnNull()
         {
-            List<Person> dto = null;
+            List<Person>? dto = null;
             var listPerson = _converter.ParseList(dto);
             listPerson.Should().BeNull();
         }
