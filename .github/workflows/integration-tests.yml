@@ -36,8 +36,8 @@ jobs:
             mcr.microsoft.com/mssql/server:2022-latest
           # Aguarda até o SQL Server estar pronto (máximo de 180 segundos)
           for i in {1..180}; do
-            if docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
-              /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT 1" > /dev/null 2>&1; then
+            if docker run --rm --network test-network mcr.microsoft.com/mssql/tools \
+              /opt/mssql-tools/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT 1" > /dev/null 2>&1; then
               echo "SQL Server está pronto"
               break
             fi
@@ -51,22 +51,11 @@ jobs:
             exit 1
           fi
 
-      - name: Reset SA password
-        run: |
-          # Redefine a senha do SA para garantir consistência
-          docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
-            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "ALTER LOGIN sa WITH PASSWORD = '@Admin123';" || {
-              echo "Falha ao redefinir a senha do SA"
-              docker logs sqlserver
-              exit 1
-            }
-          echo "Senha do SA redefinida com sucesso"
-
       - name: Verify SQL Server login
         run: |
           # Testa as credenciais do SA
-          docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
-            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || {
+          docker run --rm --network test-network mcr.microsoft.com/mssql/tools \
+            /opt/mssql-tools/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || {
               echo "Falha ao conectar com as credenciais do SA"
               docker logs sqlserver
               exit 1
@@ -79,13 +68,13 @@ jobs:
           docker network ls
           docker network inspect test-network || true
           # Testa conectividade com sqlserver
-          docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
-            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || true
+          docker run --rm --network test-network mcr.microsoft.com/mssql/tools \
+            /opt/mssql-tools/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || true
           # Testa resolução de hostname
-          docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
+          docker run --rm --network test-network mcr.microsoft.com/mssql/tools \
             /bin/sh -c "ping -c 3 sqlserver || true"
           # Testa conectividade do host
-          /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || true
+          /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || true
         if: always()
 
       - name: Restore dependencies
