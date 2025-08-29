@@ -1,46 +1,29 @@
-﻿using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using Polly;
 using Polly.Retry;
 using RestWithASPNET10Erudio.Configurations;
 using Serilog;
-using Testcontainers.MsSql;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 {
     public class SqlServerFixture : IAsyncLifetime
     {
-        public MsSqlContainer Container { get; }
-
-        public string ConnectionString => Container.GetConnectionString().Replace("Database=master", "Database=TestDb");
+        public string ConnectionString { get; }
 
         public SqlServerFixture()
         {
-            // Disable ResourceReaper to avoid ryuk initialization issues
-            TestcontainersSettings.ResourceReaperEnabled = false;
-
-            Container = new MsSqlBuilder()
-                .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-                .WithPassword("@Your_password123!")
-                .WithEnvironment("ACCEPT_EULA", "Y")
-                .WithNetworkAliases("sqlserver")
-                .WithNetwork("test-network")
-                .WithWaitStrategy(Wait.ForUnixContainer()
-                    .UntilCommandIsCompleted("/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P '@Your_password123!' -Q 'SELECT 1'")
-                    .UntilPortIsAvailable(1433))
-                .Build();
+            // Connection string provided by environment variable set in GitHub Actions
+            ConnectionString = Environment.GetEnvironmentVariable("SQL_SERVER_CONNECTION_STRING")
+                ?? "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Your_password123!;TrustServerCertificate=True";
         }
 
         public async Task InitializeAsync()
         {
-            Log.Information("Starting SQL Server container...");
-            await Container.StartAsync();
-            Log.Information("SQL Server container started with connection string: {ConnectionString}", ConnectionString);
+            Log.Information("Using connection string: {ConnectionString}", ConnectionString);
 
             // Create TestDb database
             Log.Information("Creating TestDb database...");
-            using var connection = new SqlConnection(Container.GetConnectionString());
+            using var connection = new SqlConnection(ConnectionString.Replace("Database=TestDb", "Database=master"));
             await connection.OpenAsync();
             using var command = new SqlCommand("IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'TestDb') CREATE DATABASE TestDb;", connection);
             await command.ExecuteNonQueryAsync();
@@ -55,10 +38,10 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
             });
         }
 
-        public async Task DisposeAsync()
+        public Task DisposeAsync()
         {
-            await Container.DisposeAsync();
-            Log.Information("SQL Server container disposed.");
+            Log.Information("SQL Server fixture disposed.");
+            return Task.CompletedTask; // No container to dispose since managed by workflow
         }
 
         private static readonly AsyncRetryPolicy RetryPolicy = Policy
