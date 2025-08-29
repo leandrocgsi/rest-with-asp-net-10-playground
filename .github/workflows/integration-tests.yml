@@ -13,7 +13,7 @@ jobs:
         image: docker:20.10-dind
         options: --privileged
         env:
-          DOCKER_TLS_CERTDIR: "" # Disable TLS for simplicity
+          DOCKER_TLS_CERTDIR: "" # Desativa TLS para simplicidade
 
     steps:
       - name: Checkout repository
@@ -34,24 +34,33 @@ jobs:
             -e "SA_PASSWORD=@Your_password123!" \
             -p 1433:1433 \
             mcr.microsoft.com/mssql/server:2022-latest
-          # Wait for SQL Server to be ready (up to 60 seconds)
-          for i in {1..60}; do
+          # Aguarda até o SQL Server estar pronto (máximo de 180 segundos)
+          for i in {1..180}; do
             if docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
-              /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U SA -P "@Your_password123!" -Q "SELECT 1" > /dev/null 2>&1; then
-              echo "SQL Server is ready"
+              /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Your_password123!" -Q "SELECT 1" > /dev/null 2>&1; then
+              echo "SQL Server está pronto"
               break
             fi
-            echo "Waiting for SQL Server to start ($i/60)..."
+            echo "Aguardando SQL Server iniciar ($i/180)..."
             sleep 1
           done
+          # Verifica se o contêiner está rodando
+          if [ "$(docker inspect -f '{{.State.Running}}' sqlserver)" != "true" ]; then
+            echo "SQL Server container não está rodando"
+            docker logs sqlserver
+            exit 1
+          fi
 
       - name: Debug Docker environment
         run: |
           docker ps
           docker network ls
           docker network inspect test-network || true
+          # Testa conectividade do host
           docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
-            /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U SA -P "@Your_password123!" -Q "SELECT @@VERSION" || true
+            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Your_password123!" -Q "SELECT @@VERSION" || true
+          # Testa conectividade do localhost
+          /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U SA -P "@Your_password123!" -Q "SELECT @@VERSION" || true
         if: always()
 
       - name: Restore dependencies
@@ -66,7 +75,7 @@ jobs:
         run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --blame-hang-timeout 3m
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
         env:
-          SQL_SERVER_CONNECTION_STRING: "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Your_password123!;TrustServerCertificate=True"
+          SQL_SERVER_CONNECTION_STRING: "Server=localhost,1433;Database=TestDb;User Id=SA;Password=@Your_password123!;TrustServerCertificate=True"
           ASPNETCORE_ENVIRONMENT: Test
 
       - name: Capture SQL Server logs
