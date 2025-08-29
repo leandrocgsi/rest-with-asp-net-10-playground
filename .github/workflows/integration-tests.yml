@@ -12,6 +12,8 @@ jobs:
       docker:
         image: docker:20.10-dind
         options: --privileged
+        env:
+          DOCKER_TLS_CERTDIR: "" # Disable TLS for simplicity
 
     steps:
       - name: Checkout repository
@@ -25,6 +27,22 @@ jobs:
       - name: Verify Docker
         run: docker info
 
+      - name: Create Docker network
+        run: docker network create test-network || true
+
+      - name: Pre-pull SQL Server & Ryuk images
+        run: |
+          docker pull mcr.microsoft.com/mssql/server:2022-latest
+          docker pull testcontainers/ryuk:0.13.0
+
+      - name: Debug Docker environment
+        run: |
+          docker ps
+          docker network ls
+          docker network inspect test-network || true
+          docker run --rm --network test-network mcr.microsoft.com/mssql-tools /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U SA -P "@Your_password123!" -Q "SELECT @@VERSION" || true
+        if: always()
+
       - name: Restore dependencies
         run: dotnet restore
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
@@ -34,5 +52,14 @@ jobs:
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --blame-hang-timeout 3m
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
+        env:
+          TESTCONTAINERS_HOST_OVERRIDE: docker
+          TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
+          DOCKER_HOST: tcp://docker:2375
+          ASPNETCORE_ENVIRONMENT: Test
+
+      - name: Capture SQL Server logs
+        run: docker logs $(docker ps -q --filter "ancestor=mcr.microsoft.com/mssql/server:2022-latest") || true
+        if: failure()
