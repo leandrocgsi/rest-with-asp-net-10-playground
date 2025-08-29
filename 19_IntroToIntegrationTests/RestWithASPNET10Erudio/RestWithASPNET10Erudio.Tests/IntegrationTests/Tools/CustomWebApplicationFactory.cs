@@ -11,21 +11,18 @@ namespace RestWithASPNET10Erudio.IntegrationTests
 
         public CustomWebApplicationFactory(string connectionString)
         {
-            _connectionString = connectionString;
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureAppConfiguration((context, config) =>
             {
-                var dict = new Dictionary<string, string?>
+                var overrides = new Dictionary<string, string?>
                 {
-                    {
-                        "MSSQLServerSQLConnection:MSSQLServerSQLConnectionString",
-                        _connectionString
-                    }
+                    ["MSSQLServerSQLConnection:MSSQLServerSQLConnectionString"] = _connectionString
                 };
-                config.AddInMemoryCollection(dict!);
+                config.AddInMemoryCollection(overrides);
             });
         }
     }

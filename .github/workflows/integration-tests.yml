@@ -1,136 +1,37 @@
-name: Integration Tests
+name: Test SQL Server Container
 
 on:
   push:
     branches: [main]
 
 jobs:
-  test:
+  test-sql-container:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:20.10-dind
-        options: --privileged
-        env:
-          DOCKER_TLS_CERTDIR: "" # Desativa TLS para simplicidade
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "10.0.x"
-
-      - name: Create Docker network
-        run: docker network create test-network || true
-
-      - name: Build custom mssql-tools image
+      - name: Test SQL Server Container
         run: |
-          cat <<EOF > Dockerfile
-          FROM ubuntu:20.04
-          RUN apt-get update && apt-get install -y curl gnupg
-          RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-          RUN curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list | tee /etc/apt/sources.list.d/msprod.list
-          RUN apt-get update && ACCEPT_EULA=Y apt-get install -y mssql-tools18
-          RUN echo 'export PATH="\$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
-          CMD ["/bin/bash"]
-          EOF
-          docker build -t custom-mssql-tools .
-
-      - name: Start SQL Server container
-        run: |
-          docker run -d --name sqlserver --network test-network \
+          # Iniciar o contêiner SQL Server
+          docker run -d --name sqlserver_test \
             -e "ACCEPT_EULA=Y" \
             -e "SA_PASSWORD=@Admin123" \
             -p 1433:1433 \
             mcr.microsoft.com/mssql/server:2022-latest
-          # Aguarda até o SQL Server estar pronto (máximo de 60 segundos)
-          for i in {1..60}; do
-            if docker run --rm --network test-network custom-mssql-tools \
-              /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT 1" -C > /dev/null 2>&1; then
-              echo "SQL Server está pronto"
-              break
-            fi
-            echo "Aguardando SQL Server iniciar ($i/60)..."
-            sleep 1
-          done
-          # Verifica se o contêiner está rodando
-          if [ "$(docker inspect -f '{{.State.Running}}' sqlserver)" != "true" ]; then
-            echo "SQL Server container não está rodando"
-            docker logs sqlserver
+          
+          # Esperar até que o SQL Server esteja pronto (máximo 60 segundos)
+          timeout 60s bash -c "until docker exec sqlserver_test /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P '@Admin123' -Q 'SELECT 1'; do sleep 5; done"
+          
+          # Verificar se o comando sqlcmd foi bem-sucedido
+          if [ $? -eq 0 ]; then
+            echo "SQL Server container is ready and accessible."
+          else
+            echo "Failed to connect to SQL Server container."
+            docker logs sqlserver_test
             exit 1
           fi
-
-      - name: Create TestDb database
-        run: |
-          docker run --rm --network test-network custom-mssql-tools \
-            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" \
-            -Q "IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'TestDb') CREATE DATABASE TestDb" -C || {
-              echo "Falha ao criar o banco TestDb"
-              docker logs sqlserver
-              exit 1
-            }
-          echo "TestDb database created or already exists."
-
-      - name: Verify SQL Server login
-        run: |
-          # Testa as credenciais do SA
-          docker run --rm --network test-network custom-mssql-tools \
-            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" -C || {
-              echo "Falha ao conectar com as credenciais do SA"
-              docker logs sqlserver
-              exit 1
-            }
-          echo "Login do SA bem-sucedido"
-
-      - name: Debug Docker environment
-        run: |
-          docker ps
-          docker network ls
-          docker network inspect test-network || true
-          # Testa conectividade com sqlserver
-          docker run --rm --network test-network custom-mssql-tools \
-            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" -C || true
-          # Testa resolução de hostname
-          docker run --rm --network test-network alpine \
-            ping -c 3 sqlserver || true
-          # Testa conectividade do host
-          docker run --rm --network test-network custom-mssql-tools \
-            /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" -C || true
-        if: always()
-
-      - name: Debug test directory
-        run: |
-          docker run --rm --network test-network \
-            -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
-            -w /app \
-            mcr.microsoft.com/dotnet/sdk:10.0-preview \
-            ls -la
-        if: always()
-
-      - name: Restore dependencies
-        run: dotnet restore
-        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
-
-      - name: Run tests
-        run: |
-          # Executa os testes dentro da mesma rede do contêiner SQL Server
-          docker run --rm --network test-network \
-            -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
-            -w /app \
-            mcr.microsoft.com/dotnet/sdk:10.0-preview \
-            dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --blame-hang-timeout 3m --verbosity detailed
+          
+          # Parar e remover o contêiner
+          docker stop sqlserver_test
+          docker rm sqlserver_test
         env:
-          SQL_SERVER_CONNECTION_STRING: "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True"
-          ASPNETCORE_ENVIRONMENT: Test
-
-      - name: Capture SQL Server logs
-        run: docker logs sqlserver || true
-        if: failure()
+          SQL_SERVER_TEST_PORT: "1433"
