@@ -33,8 +33,7 @@ jobs:
       - name: Pre-pull SQL Server & Ryuk images
         run: |
           docker pull mcr.microsoft.com/mssql/server:2022-latest
-          docker pull testcontainers/ryuk:0.13.0
-
+          
       - name: Debug Docker environment
         run: |
           docker ps
