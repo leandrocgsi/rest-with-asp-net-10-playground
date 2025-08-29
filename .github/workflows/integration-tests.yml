@@ -31,7 +31,26 @@ jobs:
           fi
           
           # Parar e remover o contêiner
-          docker stop sqlserver_test
-          docker rm sqlserver_test
+          # docker stop sqlserver_test
+          # docker rm sqlserver_test
         env:
           SQL_SERVER_TEST_PORT: "1433"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
