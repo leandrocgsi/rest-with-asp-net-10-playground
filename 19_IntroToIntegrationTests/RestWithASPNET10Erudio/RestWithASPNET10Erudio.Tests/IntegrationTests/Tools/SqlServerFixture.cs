@@ -14,7 +14,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
         {
             // Connection string provided by environment variable set in GitHub Actions
             ConnectionString = Environment.GetEnvironmentVariable("SQL_SERVER_CONNECTION_STRING")
-                ?? "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Your_password123!;TrustServerCertificate=True";
+                ?? "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True";
         }
 
         public async Task InitializeAsync()

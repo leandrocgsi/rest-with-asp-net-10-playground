@@ -31,13 +31,13 @@ jobs:
         run: |
           docker run -d --name sqlserver --network test-network \
             -e "ACCEPT_EULA=Y" \
-            -e "SA_PASSWORD=@Your_password123!" \
+            -e "SA_PASSWORD=@Admin123" \
             -p 1433:1433 \
             mcr.microsoft.com/mssql/server:2022-latest
           # Aguarda até o SQL Server estar pronto (máximo de 180 segundos)
           for i in {1..180}; do
             if docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
-              /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Your_password123!" -Q "SELECT 1" > /dev/null 2>&1; then
+              /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT 1" > /dev/null 2>&1; then
               echo "SQL Server está pronto"
               break
             fi
@@ -51,16 +51,41 @@ jobs:
             exit 1
           fi
 
+      - name: Reset SA password
+        run: |
+          # Redefine a senha do SA para garantir consistência
+          docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
+            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "ALTER LOGIN sa WITH PASSWORD = '@Admin123';" || {
+              echo "Falha ao redefinir a senha do SA"
+              docker logs sqlserver
+              exit 1
+            }
+          echo "Senha do SA redefinida com sucesso"
+
+      - name: Verify SQL Server login
+        run: |
+          # Testa as credenciais do SA
+          docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
+            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || {
+              echo "Falha ao conectar com as credenciais do SA"
+              docker logs sqlserver
+              exit 1
+            }
+          echo "Login do SA bem-sucedido"
+
       - name: Debug Docker environment
         run: |
           docker ps
           docker network ls
           docker network inspect test-network || true
-          # Testa conectividade do host
+          # Testa conectividade com sqlserver
           docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
-            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Your_password123!" -Q "SELECT @@VERSION" || true
-          # Testa conectividade do localhost
-          /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U SA -P "@Your_password123!" -Q "SELECT @@VERSION" || true
+            /opt/mssql-tools18/bin/sqlcmd -S sqlserver,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || true
+          # Testa resolução de hostname
+          docker run --rm --network test-network mcr.microsoft.com/mssql-tools \
+            /bin/sh -c "ping -c 3 sqlserver || true"
+          # Testa conectividade do host
+          /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U SA -P "@Admin123" -Q "SELECT @@VERSION" || true
         if: always()
 
       - name: Restore dependencies
@@ -72,10 +97,15 @@ jobs:
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --blame-hang-timeout 3m
-        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
+        run: |
+          # Executa os testes dentro da mesma rede do contêiner SQL Server
+          docker run --rm --network test-network \
+            -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
+            -w /app \
+            mcr.microsoft.com/dotnet/sdk:10.0 \
+            dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --blame-hang-timeout 3m
         env:
-          SQL_SERVER_CONNECTION_STRING: "Server=localhost,1433;Database=TestDb;User Id=SA;Password=@Your_password123!;TrustServerCertificate=True"
+          SQL_SERVER_CONNECTION_STRING: "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True"
           ASPNETCORE_ENVIRONMENT: Test
 
       - name: Capture SQL Server logs
