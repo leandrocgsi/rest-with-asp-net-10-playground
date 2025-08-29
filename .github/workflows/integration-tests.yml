@@ -1,4 +1,4 @@
-name: Test SQL Server Container
+name: Run .NET 10 Integration Tests on SQL Server Container
 
 on:
   push:
