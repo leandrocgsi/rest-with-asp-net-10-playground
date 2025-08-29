@@ -13,7 +13,6 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 
         public SqlServerFixture()
         {
-            // Connection string provided by environment variable or fallback
             ConnectionString = Environment.GetEnvironmentVariable("SQL_SERVER_CONNECTION_STRING")
                 ?? "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True";
             Log.Information("SqlServerFixture initialized with connection string: {ConnectionString}", ConnectionString);
@@ -70,10 +69,10 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
             }
         }
 
-        public Task DisposeAsync()
+        public async Task DisposeAsync()
         {
             Log.Information("SQL Server fixture disposed.");
-            return Task.CompletedTask; // No container to dispose since managed by workflow
+            await Task.CompletedTask;
         }
 
         private static readonly AsyncRetryPolicy RetryPolicy = Policy
