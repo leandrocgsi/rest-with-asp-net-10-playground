@@ -134,6 +134,18 @@ jobs:
           SQL_SERVER_CONNECTION_STRING: "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True"
           ASPNETCORE_ENVIRONMENT: Test
 
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
+
       - name: Capture SQL Server logs
         run: docker logs sqlserver || true
         if: failure()
