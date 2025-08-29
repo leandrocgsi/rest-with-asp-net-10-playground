@@ -30,7 +30,9 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
                 .WithPassword("@Your_password123!")
                 .Build();
 
-            _logger.LogInformation("[SqlServerFixture] Container construído.");
+            Container.StartAsync().GetAwaiter().GetResult();
+
+           _logger.LogInformation("[SqlServerFixture] Container construído.");
         }
 
         public async Task InitializeAsync()
