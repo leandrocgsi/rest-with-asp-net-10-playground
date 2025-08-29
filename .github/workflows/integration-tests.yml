@@ -116,7 +116,7 @@ jobs:
           docker run --rm --network test-network \
             -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
             -w /app \
-            mcr.microsoft.com/dotnet/sdk:10.0 \
+            mcr.microsoft.com/dotnet/sdk:10.0-preview \
             dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --blame-hang-timeout 3m
         env:
           SQL_SERVER_CONNECTION_STRING: "Server=sqlserver,1433;Database=TestDb;User Id=SA;Password=@Admin123;TrustServerCertificate=True"
