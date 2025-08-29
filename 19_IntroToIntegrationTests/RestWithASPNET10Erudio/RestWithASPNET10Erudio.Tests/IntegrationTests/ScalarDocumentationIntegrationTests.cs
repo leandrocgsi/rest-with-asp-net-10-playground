@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using RestWithASPNET10Erudio.IntegrationTests;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
 
@@ -10,24 +11,26 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests
 
         public ScalarDocumentationIntegrationTests(SqlServerFixture sqlFixture)
         {
-            // Passa a connection string do Testcontainers para o factory
             var factory = new CustomWebApplicationFactory<Program>(sqlFixture.ConnectionString);
 
-            // Cria o client diretamente da instância em memória do servidor de testes
-            _httpClient = factory.CreateClient();
+            _httpClient = factory.CreateClient(new WebApplicationFactoryClientOptions
+            {
+                BaseAddress = new Uri("http://localhost")
+            });
         }
 
         [Fact(DisplayName = "Scalar UI should be accessible and return HTML")]
         public async Task ScalarUi_ShouldBeAccessible()
         {
-            // Act
             var response = await _httpClient.GetAsync("/scalar/");
             response.EnsureSuccessStatusCode(); // garante 200 OK
 
             var content = await response.Content.ReadAsStringAsync();
 
-            // Assert
+            // Verifica que contém o título esperado da documentação Scalar
             content.Should().Contain("<title>ASP.NET 2026 REST API's from 0 to Azure and GCP with .NET 10, Docker e Kubernetes</title>");
+
+            // Opcional: verifica que o HTML contém algum script característico da UI
             content.Should().Contain("script src");
         }
     }
