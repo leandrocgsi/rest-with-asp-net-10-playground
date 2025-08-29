@@ -13,7 +13,6 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
         {
             Container = new MsSqlBuilder()
                 .WithPassword("@Admin123") // senha obrigatória para SQL Server
-                //.WithName("sqlserver-tests") // Opcional, para consistência com o workflow
                 .Build();
         }
 
