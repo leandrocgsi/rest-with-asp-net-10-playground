@@ -1,75 +1,61 @@
-﻿using RestWithASPNET10Erudio.Configurations;
+﻿using DotNet.Testcontainers.Builders;
+using RestWithASPNET10Erudio.Configurations;
+using Serilog;
+using Polly.Retry;
 using Testcontainers.MsSql;
-using Microsoft.Extensions.Logging;
-using Microsoft.Data.SqlClient;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 {
     public class SqlServerFixture : IAsyncLifetime
     {
-        private readonly ILogger<SqlServerFixture> _logger;
-
         public MsSqlContainer Container { get; }
 
-        public string ConnectionString => Container.GetConnectionString();
+        public string ConnectionString => Container.GetConnectionString().Replace("Database=master", "Database=TestDb");
 
         public SqlServerFixture()
         {
-            // 🔵 Cria um Logger simples
-            using var loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder.AddConsole();
-                builder.SetMinimumLevel(LogLevel.Information);
-            });
-
-            _logger = loggerFactory.CreateLogger<SqlServerFixture>();
-
-            _logger.LogInformation("[SqlServerFixture] Construindo container SQL Server...");
-
             Container = new MsSqlBuilder()
+                .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
                 .WithPassword("@Your_password123!")
+                .WithNetworkAliases("sqlserver")
+                .WithNetwork(new NetworkBuilder().WithName("test-network").Build())
+                .WithWaitStrategy(Wait.ForUnixContainer()
+                    .UntilCommandIsCompleted("/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P '@Your_password123!' -Q 'SELECT 1'"))
                 .Build();
-
-            Container.StartAsync().GetAwaiter().GetResult();
-
-           _logger.LogInformation("[SqlServerFixture] Container construído.");
         }
 
         public async Task InitializeAsync()
         {
-            _logger.LogInformation("[SqlServerFixture] Iniciando container...");
             await Container.StartAsync();
-            _logger.LogInformation("[SqlServerFixture] Container iniciado.");
+            Log.Information("SQL Server container started with connection string: {ConnectionString}", ConnectionString);
 
-            _logger.LogInformation("[SqlServerFixture] Aguardando SQL Server estar pronto...");
-            var retries = 10;
-            while (retries > 0)
+            // Add a retry mechanism for migrations
+            await RetryPolicy.ExecuteAsync(async () =>
             {
                 try
                 {
-                    using var conn = new SqlConnection(ConnectionString);
-                    await conn.OpenAsync();
-                    _logger.LogInformation("[SqlServerFixture] Conexão com SQL Server estabelecida.");
-                    break;
+                    EvolveConfig.ExecuteMigrations(ConnectionString);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    _logger.LogWarning("[SqlServerFixture] SQL Server ainda não está pronto, aguardando 5 segundos...");
-                    await Task.Delay(5000);
-                    retries--;
+                    Log.Error(ex, "Failed to apply migrations on attempt. Retrying...");
+                    throw;
                 }
-            }
-
-            _logger.LogInformation("[SqlServerFixture] Executando migrations com Evolve...");
-            EvolveConfig.ExecuteMigrations(ConnectionString);
-            _logger.LogInformation("[SqlServerFixture] Migrations concluídas.");
+            });
         }
 
         public async Task DisposeAsync()
         {
-            _logger.LogInformation("[SqlServerFixture] Descartando container...");
             await Container.DisposeAsync();
-            _logger.LogInformation("[SqlServerFixture] Container descartado.");
         }
+
+        // Custom retry policy for migrations
+        private static readonly AsyncRetryPolicy RetryPolicy = Polly.Policy
+            .Handle<Exception>()
+            .WaitAndRetryAsync(5, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)), // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+                (exception, timeSpan, retryCount, context) =>
+                {
+                    Log.Warning("Retry {RetryCount} after {TimeSpan} due to: {Exception}", retryCount, timeSpan, exception.Message);
+                });
     }
 }
