@@ -11,7 +11,7 @@ jobs:
     services:
       docker:
         image: docker:20.10-dind
-        options: --privileged --network test-network
+        options: --privileged
         env:
           DOCKER_TLS_CERTDIR: "" # Disable TLS for simplicity
 
@@ -33,13 +33,14 @@ jobs:
       - name: Pre-pull SQL Server & Ryuk images
         run: |
           docker pull mcr.microsoft.com/mssql/server:2022-latest
-          docker pull testcontainers/ryuk:0.12.0
+          docker pull testcontainers/ryuk:0.13.0
 
       - name: Debug Docker environment
         run: |
           docker ps
           docker network ls
           docker network inspect test-network || true
+          docker run --rm --network test-network mcr.microsoft.com/mssql-tools /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U SA -P "@Your_password123!" -Q "SELECT @@VERSION" || true
         if: always()
 
       - name: Restore dependencies
@@ -57,6 +58,7 @@ jobs:
           TESTCONTAINERS_HOST_OVERRIDE: docker
           TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
           DOCKER_HOST: tcp://docker:2375
+          ASPNETCORE_ENVIRONMENT: Test
 
       - name: Capture SQL Server logs
         run: docker logs $(docker ps -q --filter "ancestor=mcr.microsoft.com/mssql/server:2022-latest") || true
