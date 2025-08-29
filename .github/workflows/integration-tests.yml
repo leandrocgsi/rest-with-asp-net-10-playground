@@ -39,6 +39,5 @@ jobs:
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build \
-            --logger "console;verbosity=detailed"
+        run: dotnet test --configuration Release --no-build --logger "console;verbosity=detailed"
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
