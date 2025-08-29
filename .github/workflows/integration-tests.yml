@@ -110,25 +110,9 @@ jobs:
         run: dotnet build --configuration Release --no-restore
         working-directory: 19_IntroToIntegrationTests/RestWithASPNET10Erudio
 
-      - name: Debug test environment
-        run: |
-          # Verifica o conteúdo do diretório montado
-          docker run --rm --network test-network \
-            -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
-            -w /app \
-            mcr.microsoft.com/dotnet/sdk:10.0-preview \
-            ls -la
-          # Verifica a versão do .NET SDK
-          docker run --rm --network test-network \
-            -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
-            -w /app \
-            mcr.microsoft.com/dotnet/sdk:10.0-preview \
-            dotnet --version
-        if: always()
-
       - name: Run tests
         run: |
-          # Executa os testes com saída detalhada
+          # Executa os testes dentro da mesma rede do contêiner SQL Server
           docker run --rm --network test-network \
             -v $(pwd)/19_IntroToIntegrationTests/RestWithASPNET10Erudio:/app \
             -w /app \
