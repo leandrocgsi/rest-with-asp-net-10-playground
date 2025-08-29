@@ -19,7 +19,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
                 .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
                 .WithPassword("@Your_password123!")
                 .WithNetworkAliases("sqlserver")
-                .WithNetwork(new NetworkBuilder().WithName("test-network").Build())
+                .WithNetwork("test-network")
                 .WithWaitStrategy(Wait.ForUnixContainer()
                     .UntilCommandIsCompleted("/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P '@Your_password123!' -Q 'SELECT 1'"))
                 .Build();
