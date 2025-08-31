@@ -1,7 +1,7 @@
 ﻿using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace RestWithASPNET10Erudio.IntegrationTests
+namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 {
     public class PriorityOrderer : ITestCaseOrderer
     {

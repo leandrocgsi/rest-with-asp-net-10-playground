@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Services;
 
@@ -6,6 +7,7 @@ namespace RestWithASPNET10Erudio.Controllers.V1
 {
     [ApiController]
     [Route("api/[controller]/v1")]
+    // [EnableCors("LocalPolicy")]
     public class PersonController : ControllerBase
     {
         private IPersonServices _personService;
@@ -29,6 +31,7 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         }
 
         [HttpGet("{id}")]
+        // [EnableCors("LocalPolicy")]
         [ProducesResponseType(200, Type = typeof(PersonDTO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -45,6 +48,7 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         }
 
         [HttpPost]
+        // [EnableCors("MultipleOriginsPolicy")]
         [ProducesResponseType(200, Type = typeof(PersonDTO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
