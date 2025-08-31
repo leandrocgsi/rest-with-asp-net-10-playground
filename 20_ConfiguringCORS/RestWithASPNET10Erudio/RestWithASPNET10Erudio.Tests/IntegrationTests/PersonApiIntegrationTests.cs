@@ -7,7 +7,7 @@ using System.Net.Http.Json;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests
 {
-    [TestCaseOrderer("RestWithASPNET10Erudio.IntegrationTests.PriorityOrderer", "RestWithASPNET10Erudio.Tests")]
+    [TestCaseOrderer("RestWithASPNET10Erudio.Tests.IntegrationTests.Tools.PriorityOrderer", "RestWithASPNET10Erudio.Tests")]
     public class PersonApiIntegrationTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
