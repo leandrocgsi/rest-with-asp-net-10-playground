@@ -1,27 +1,31 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RestWithASPNET10Erudio.Data.DTO.V1;
-using RestWithASPNET10Erudio.IntegrationTests;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
-namespace RestWithASPNET10Erudio.Tests.IntegrationTests
+namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
 {
-    [TestCaseOrderer("RestWithASPNET10Erudio.Tests.IntegrationTests.Tools.PriorityOrderer", "RestWithASPNET10Erudio.Tests")]
+    [TestCaseOrderer(
+        "RestWithASPNET10Erudio.Tests.IntegrationTests.Tools.PriorityOrderer",
+        "RestWithASPNET10Erudio.Tests")]
     public class PersonCorsIntegrationTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
         private static PersonDTO _person;
 
-        public PersonCorsIntegrationTests(SqlServerFixture fixture)
+        public PersonCorsIntegrationTests(SqlServerFixture sqlFixture)
         {
-            var factory = new CustomWebApplicationFactory<Program>(fixture.ConnectionString);
-            _httpClient = factory.CreateClient(new WebApplicationFactoryClientOptions
-            {
-                BaseAddress = new Uri("http://localhost")
-            });
+            var factory = new CustomWebApplicationFactory<Program>(
+                sqlFixture.ConnectionString);
+
+            _httpClient = factory.CreateClient(
+                new WebApplicationFactoryClientOptions
+                {
+                    BaseAddress = new Uri("http://localhost")
+                }
+            );
         }
 
         private void AddOriginHeader(string origin)
@@ -32,8 +36,9 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests
 
         [Fact(DisplayName = "01 - Create Person With Allowed Origin")]
         [TestPriority(1)]
-        public async Task CreatePerson_AllowedOrigin_ShouldReturnCreatedPerson()
+        public async Task CreatePerson_WithAllowedOrigin_ShouldReturnCreated()
         {
+            // Arrange
             AddOriginHeader("https://erudio.com.br");
 
             var request = new PersonDTO
@@ -44,64 +49,87 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests
                 Gender = "Male"
             };
 
-            var response = await _httpClient.PostAsJsonAsync("api/person/v1", request);
+            // Act
+            var response = await _httpClient
+                .PostAsJsonAsync("api/person/v1", request);
+
+            // Assert
             response.EnsureSuccessStatusCode();
 
-            var created = await response.Content.ReadFromJsonAsync<PersonDTO>();
+            var created = await response.Content
+                .ReadFromJsonAsync<PersonDTO>();
             created.Should().NotBeNull();
-            created!.Id.Should().BeGreaterThan(0);
+            created.Id.Should().BeGreaterThan(0);
 
             _person = created;
         }
 
         [Fact(DisplayName = "02 - Create Person With Disallowed Origin")]
         [TestPriority(2)]
-        public async Task CreatePerson_DisallowedOrigin_ShouldReturnForbidden()
+        public async Task CreatePerson_WithDisallowedOrigin_ShouldReturnForbiden()
         {
+            // Arrange
             AddOriginHeader("https://semeru.com.br");
 
             var request = new PersonDTO
             {
-                FirstName = "Test",
-                LastName = "User",
-                Address = "Some Address",
-                Gender = "Other"
+                FirstName = "Richard",
+                LastName = "Stallman",
+                Address = "New York City - New York - USA",
+                Gender = "Male"
             };
 
-            var response = await _httpClient.PostAsJsonAsync("api/person/v1", request);
+            // Act
+            var response = await _httpClient
+                .PostAsJsonAsync("api/person/v1", request);
 
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-            var content = await response.Content.ReadAsStringAsync();
+
+            var content = await response.Content
+                .ReadAsStringAsync();
             content.Should().Be("CORS origin not allowed.");
         }
 
-        [Fact(DisplayName = "03 - Get Person By Id With Allowed Origin")]
+        [Fact(DisplayName = "03 - Get Person By ID With Allowed Origin")]
         [TestPriority(3)]
-        public async Task GetPersonById_AllowedOrigin_ShouldReturnPerson()
+        public async Task FindPersonById_WithAllowedOrigin_ShouldReturnOk()
         {
-            _person.Should().NotBeNull();
+            // Arrange
+            AddOriginHeader("https://erudio.com.br");
 
-            AddOriginHeader("http://localhost:8080");
-            var response = await _httpClient.GetAsync($"api/person/v1/{_person.Id}");
+            // Act
+            var response = await _httpClient
+                .GetAsync($"api/person/v1/{_person.Id}");
+
+            // Assert
             response.EnsureSuccessStatusCode();
 
-            var person = await response.Content.ReadFromJsonAsync<PersonDTO>();
-            person.Should().NotBeNull();
-            person!.Id.Should().Be(_person.Id);
-            person.FirstName.Should().Be("Richard");
+            var found = await response.Content
+                .ReadFromJsonAsync<PersonDTO>();
+
+            found.Should().NotBeNull();
+            found.Id.Should().Be(_person.Id);
+            found.FirstName.Should().Be("Richard");
+            found.LastName.Should().Be("Stallman");
+            found.Address.Should().Be("New York City - New York - USA");
         }
 
-        [Fact(DisplayName = "04 - Get Person By Id With Disallowed Origin")]
+        [Fact(DisplayName = "04 - Get Person By ID With Disallowed Origin")]
         [TestPriority(4)]
-        public async Task GetPersonById_DisallowedOrigin_ShouldReturnForbidden()
+        public async Task FindByIdPerson_WithDisallowedOrigin_ShouldReturnForbiden()
         {
-            _person.Should().NotBeNull();
-
+            // Arrange
             AddOriginHeader("https://semeru.com.br");
-            var response = await _httpClient.GetAsync($"api/person/v1/{_person.Id}");
 
+            // Act
+            var response = await _httpClient
+                .GetAsync($"api/person/v1/{_person.Id}");
+
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content
+                .ReadAsStringAsync();
             content.Should().Be("CORS origin not allowed.");
         }
     }

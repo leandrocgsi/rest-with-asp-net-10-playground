@@ -5,13 +5,11 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 {
     public static class XmlHelper
     {
-
         public static StringContent SerializeToXml<T>(T obj)
         {
             var serializer = new XmlSerializer(typeof(T));
-
             var ns = new XmlSerializerNamespaces();
-            ns.Add(string.Empty, string.Empty); // remove xmlns desnecessário
+            ns.Add(string.Empty, string.Empty);
 
             using var stringWriter = new Utf8StringWriter();
             serializer.Serialize(stringWriter, obj, ns);
@@ -19,10 +17,12 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
             return new StringContent(stringWriter.ToString(), Encoding.UTF8, "application/xml");
         }
 
-        public static async Task<T?> DeserializeFromXmlAsync<T>(HttpResponseMessage response)
+        public static async Task<T?> ReadFromXmlAsync<T>(
+            HttpResponseMessage response)
         {
             var serializer = new XmlSerializer(typeof(T));
-            await using var stream = await response.Content.ReadAsStreamAsync();
+            await using var stream = await response
+                .Content.ReadAsStreamAsync();
             return (T?)serializer.Deserialize(stream);
         }
 

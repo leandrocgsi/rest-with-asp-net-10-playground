@@ -48,5 +48,6 @@ namespace RestWithASPNET10Erudio.Configurations
             };
             evolve.Migrate();
         }
+
     }
 }

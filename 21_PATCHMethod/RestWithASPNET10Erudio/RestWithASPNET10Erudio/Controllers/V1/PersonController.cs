@@ -31,10 +31,10 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         }
 
         [HttpGet("{id}")]
-        // [EnableCors("LocalPolicy")]
         [ProducesResponseType(200, Type = typeof(PersonDTO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
+        // [EnableCors("LocalPolicy")]
         public IActionResult Get(long id)
         {
             _logger.LogInformation("Fetching person with ID {id}", id);
@@ -48,10 +48,10 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         }
 
         [HttpPost]
-        // [EnableCors("MultipleOriginsPolicy")]
         [ProducesResponseType(200, Type = typeof(PersonDTO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
+        // [EnableCors("MultipleOriginPolicy")]
         public IActionResult Post([FromBody] PersonDTO person)
         {
             _logger.LogInformation("Creating new Person: {firstName}", person.FirstName);
@@ -96,14 +96,20 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         }
 
         [HttpPatch("{id}")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(200, Type = typeof(PersonDTO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        public IActionResult Patch(long id)
+        public IActionResult Disable(long id)
         {
-            var person = _personService.Disable(id);
-            return Ok(person);
+            _logger.LogInformation("Disabling person with ID {id}", id);
+            var disabledPerson = _personService.Disable(id);
+            if (disabledPerson == null)
+            {
+                _logger.LogError("Failed to disable person with ID {id}", id);
+                return NotFound();
+            }
+            _logger.LogDebug("Person with ID {id} disabled successfully", id);
+            return Ok(disabledPerson);
         }
-
     }
 }

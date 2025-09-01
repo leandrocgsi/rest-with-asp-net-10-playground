@@ -16,7 +16,6 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
                 .WithPortBinding(0, 1433)
                 .Build();
         }
-
         public async Task InitializeAsync()
         {
             await Container.StartAsync();
@@ -27,5 +26,6 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
         {
             await Container.DisposeAsync();
         }
+
     }
 }

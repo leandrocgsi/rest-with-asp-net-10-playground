@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 
-namespace RestWithASPNET10Erudio.IntegrationTests
+namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 {
     public class CustomWebApplicationFactory<TProgram>
         : WebApplicationFactory<TProgram> where TProgram : class
@@ -14,11 +14,12 @@ namespace RestWithASPNET10Erudio.IntegrationTests
             _connectionString = connectionString;
         }
 
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        protected override void ConfigureWebHost(
+            IWebHostBuilder builder)
         {
             builder.ConfigureAppConfiguration((context, config) =>
             {
-                var dict = new Dictionary<string, string?>
+                var dict = new Dictionary<string, string>
                 {
                     {
                         "MSSQLServerSQLConnection:MSSQLServerSQLConnectionString",

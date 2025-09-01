@@ -16,6 +16,5 @@ namespace RestWithASPNET10Erudio.Services
         void Delete(long id);
 
         PersonDTO Disable(long id);
-
     }
 }

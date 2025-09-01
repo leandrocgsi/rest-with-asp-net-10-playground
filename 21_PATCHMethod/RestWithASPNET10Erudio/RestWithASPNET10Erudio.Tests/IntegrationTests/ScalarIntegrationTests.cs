@@ -4,12 +4,12 @@ using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests
 {
-    public class SwaggerIntegrationTests
+    public class ScalarIntegrationTests
         : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
 
-        public SwaggerIntegrationTests(SqlServerFixture sqlFixture)
+        public ScalarIntegrationTests(SqlServerFixture sqlFixture)
         {
             var factory = new CustomWebApplicationFactory<Program>(
                 sqlFixture.ConnectionString);
@@ -23,32 +23,18 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests
         }
 
         [Fact]
-        public async Task SwaggerJson_ShouldReturnSwaggerJson()
+        public async Task Scalar_ShouldReturnScalarUI()
         {
             // Arrange & Act
             var response = await _httpClient
-                .GetAsync("/swagger/v1/swagger.json");
+                .GetAsync("/scalar/");
 
             // Assert
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
-            content.Should().NotBeNull();
-            content.Should().Contain("/api/person/v1");
-        }
-
-        [Fact]
-        public async Task SwaggerUI_ShouldReturnSwaggerUI()
-        {
-            // Arrange & Act
-            var response = await _httpClient
-                .GetAsync("/swagger-ui/index.html");
-            // Assert
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            content.Should().NotBeNull();
-            content.Should().Contain("<div id=\"swagger-ui\">");
+            content.Should().Contain("<title>ASP.NET 2026 REST API's from 0 to Azure and GCP with .NET 10, Docker e Kubernetes</title>");
+            content.Should().Contain("script src");
         }
     }
 }

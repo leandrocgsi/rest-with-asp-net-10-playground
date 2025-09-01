@@ -5,14 +5,15 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
 {
     public class PriorityOrderer : ITestCaseOrderer
     {
-        public IEnumerable<TTestCase> OrderTestCases<TTestCase>(
-            IEnumerable<TTestCase> testCases) where TTestCase : ITestCase
+        public IEnumerable<TTestCase> OrderTestCases<TTestCase>
+            (IEnumerable<TTestCase> testCases) where TTestCase 
+            : ITestCase
         {
-            var sortedMethods = testCases
-                .OrderBy(tc => tc.TestMethod.Method
+            var sortedMethods = testCases.OrderBy(
+                tc => tc.TestMethod.Method
                     .GetCustomAttributes(typeof(TestPriorityAttribute))
-                    .FirstOrDefault()?.GetNamedArgument<int>("Priority") ?? 0);
-
+                    .FirstOrDefault()
+                    ?.GetNamedArgument<int>("Priority") ?? 0);
             return sortedMethods;
         }
     }
@@ -21,6 +22,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
     public class TestPriorityAttribute : Attribute
     {
         public int Priority { get; }
-        public TestPriorityAttribute(int priority) => Priority = priority;
+        public TestPriorityAttribute(int priority)
+            => Priority = priority;
     }
 }

@@ -27,6 +27,7 @@ builder.Services.AddScoped<IBookServices, BookServicesImpl>();
 builder.Services.AddScoped<PersonServicesImplV2>();
 
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
 var app = builder.Build();
@@ -36,9 +37,7 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
 app.UseRouting();
-
 //app.UseCorsConfiguration();
 app.UseCorsConfiguration(builder.Configuration);
 

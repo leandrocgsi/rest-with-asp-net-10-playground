@@ -44,9 +44,8 @@ namespace RestWithASPNET10Erudio.Services.Impl
 
         public PersonDTO Disable(long id)
         {
-            var personEntity = _repository.Disable(id).Adapt<PersonDTO>();
-            return personEntity;
+            var entity = _repository.Disable(id);
+            return entity.Adapt<PersonDTO>();
         }
-
     }
 }
