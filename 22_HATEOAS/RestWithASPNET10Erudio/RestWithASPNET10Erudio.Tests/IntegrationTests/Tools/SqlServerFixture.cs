@@ -12,8 +12,8 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
         public SqlServerFixture()
         {
             Container = new MsSqlBuilder()
-                .WithPassword("@Admin123")
-                .WithPortBinding(0, 1433)
+                .WithPassword("@Admin123$")
+                //.WithPortBinding(0, 1433)
                 .Build();
         }
         public async Task InitializeAsync()
