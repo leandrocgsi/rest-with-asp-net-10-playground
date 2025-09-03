@@ -16,19 +16,26 @@ namespace RestWithASPNET10Erudio.Hypermedia.Enricher
 
         protected override Task EnrichModel(PersonDTO content, IUrlHelper urlHelper)
         {
-            // _logger.LogInformation(...); // Mantenha se necessário
+            // Obter a base da requisição para URLs absolutas
+            var request = urlHelper.ActionContext.HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
 
-            var collectionUrl = urlHelper.Action("Get", "Person"); // Para lista: api/person/v1
-            var selfUrl = urlHelper.Action("Get", "Person", new { id = content.Id }); // api/person/v1/{id}
-            var createUrl = urlHelper.Action("Post", "Person"); // api/person/v1
-            var updateUrl = urlHelper.Action("Put", "Person"); // api/person/v1 (corpo inclui ID)
-            var patchUrl = urlHelper.Action("Disable", "Person", new { id = content.Id }); // api/person/v1/{id} (nome da ação é "Disable" para Patch)
-            var deleteUrl = urlHelper.Action("Delete", "Person", new { id = content.Id }); // api/person/v1/{id}
+            // Gerar URLs absolutas com IUrlHelper.Action
+            var collectionUrl = urlHelper.Action("Get", "Person", null, request.Scheme, request.Host.Host);
+            var selfUrl = urlHelper.Action("Get", "Person", new { id = content.Id }, request.Scheme, request.Host.Host);
+            var createUrl = urlHelper.Action("Post", "Person", null, request.Scheme, request.Host.Host);
+            var updateUrl = urlHelper.Action("Put", "Person", null, request.Scheme, request.Host.Host);
+            var patchUrl = urlHelper.Action("Disable", "Person", new { id = content.Id }, request.Scheme, request.Host.Host);
+            var deleteUrl = urlHelper.Action("Delete", "Person", new { id = content.Id }, request.Scheme, request.Host.Host);
 
-            // Fallback se a URL principal não for gerada (ex.: roteamento mal configurado)
-            if (string.IsNullOrEmpty(collectionUrl))
+            // Log para depuração
+            //_logger.LogInformation("URLs geradas: collection={Collection}, self={Self}, create={Create}, update={Update}, patch={Patch}, delete={Delete}",
+            //    collectionUrl, selfUrl, createUrl, updateUrl, patchUrl, deleteUrl);
+
+            // Verificar se alguma URL é nula
+            if (string.IsNullOrEmpty(collectionUrl) || string.IsNullOrEmpty(selfUrl))
             {
-                // _logger.LogWarning("Não foi possível gerar collectionUrl para PersonDTO {Id}", content.Id);
+                // _logger.LogWarning("Uma ou mais URLs são nulas. Pulando enriquecimento para PersonDTO Id={Id}", content.Id);
                 return Task.CompletedTask;
             }
 
@@ -68,7 +75,7 @@ namespace RestWithASPNET10Erudio.Hypermedia.Enricher
             {
                 Action = HttpActionVerb.PATCH,
                 Href = patchUrl,
-                Rel = RelationType.Update, // Ou use RelationType.Patch se quiser distinguir
+                Rel = RelationType.Update,
                 Type = ResponseTypeFormat.DefaultPatch
             });
 
@@ -80,7 +87,6 @@ namespace RestWithASPNET10Erudio.Hypermedia.Enricher
                 Type = ResponseTypeFormat.DefaultDelete
             });
 
-            // _logger.LogDebug(...);
             return Task.CompletedTask;
         }
     }
