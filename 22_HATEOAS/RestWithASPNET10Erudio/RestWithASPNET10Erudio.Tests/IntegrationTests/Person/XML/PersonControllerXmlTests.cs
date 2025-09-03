@@ -159,26 +159,6 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Person.XML
             // Assert
             response.EnsureSuccessStatusCode();
 
-            // Salvar a resposta em D:/Code/person.xml para depuração
-            try
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var directory = @"D:\Code";
-                var filePath = Path.Combine(directory, "person.xml");
-
-                // Garante que o diretório existe
-                Directory.CreateDirectory(directory);
-
-                // Escreve o conteúdo da resposta no arquivo
-                await File.WriteAllTextAsync(filePath, responseContent);
-                Console.WriteLine($"Resposta salva em {filePath}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao salvar person.xml: {ex.Message}");
-            }
-            // Monte uma lógica nesse ponto para criar um arquivo person.xml na unidade D:/Code contendo o conteúdo da response assim conseguiremos investigar nelhor
-
             var list = await XmlHelper
                 .ReadFromXmlAsync<List<PersonDTO>>(response);
 

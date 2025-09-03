@@ -4,7 +4,7 @@ namespace RestWithASPNET10Erudio.Hypermedia
 {
     public class HyperMediaLink
     {
-        private string _href = string.Empty;
+        // private string _href = string.Empty;
 
         [XmlAttribute]
         public string Rel { get; set; } = string.Empty;
@@ -12,8 +12,8 @@ namespace RestWithASPNET10Erudio.Hypermedia
         [XmlAttribute]
         public string Href
         {
-            get => _href?.Replace("%2F", "/") ?? string.Empty;
-            set => _href = value ?? string.Empty;
+            get; // => _href?.Replace("%2F", "/") ?? string.Empty;
+            set; // => _href = value ?? string.Empty;
         }
 
         [XmlAttribute]
@@ -21,14 +21,5 @@ namespace RestWithASPNET10Erudio.Hypermedia
 
         [XmlAttribute]
         public string Action { get; set; } = string.Empty;
-        //public string Href
-        //{
-        //    get => ThreathHref();
-        //    set => _href = value;
-        //}
-        //private string ThreathHref()
-        //{
-        //    lock (_lock) return _href?.Replace("%2F", "/");
-        //}
     }
 }

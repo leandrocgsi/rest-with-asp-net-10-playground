@@ -11,12 +11,12 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
     [TestCaseOrderer(
         TestConstants.TestCaseOrdererFullName,
         TestConstants.TestCaseOrdererAssembly)]
-    public class PersonControllerHateoasTests : IClassFixture<SqlServerFixture>
+    public class BookControllerHateoasTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
-        private static PersonDTO? _person;
+        private static BookDTO? _book;
 
-        public PersonControllerHateoasTests(SqlServerFixture sqlFixture)
+        public BookControllerHateoasTests(SqlServerFixture sqlFixture)
         {
             var factory = new CustomWebApplicationFactory<Program>(sqlFixture.ConnectionString);
             _httpClient = factory.CreateClient(new WebApplicationFactoryClientOptions
@@ -27,28 +27,27 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
 
         private void AssertLinkPattern(string content, string rel)
         {
-            var pattern = $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/person/v1.*?""";
+            var pattern = $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/book/v1.*?""";
             Regex.IsMatch(content, pattern).Should().BeTrue($"Link with rel='{rel}' should exist and have valid href");
         }
 
-        [Fact(DisplayName = "01 - Create Person")]
+        [Fact(DisplayName = "01 - Create Book")]
         [TestPriority(1)]
-        public async Task CreatePerson_ShouldContainHateoasLinks()
+        public async Task CreateBook_ShouldContainHateoasLinks()
         {
-            var request = new PersonDTO
+            var request = new BookDTO
             {
-                FirstName = "David",
-                LastName = "Heinemeier",
-                Address = "Copenhagen - Denmark",
-                Gender = "Male",
-                Enabled = true
+                Title = "Docker Deep Dive",
+                Author = "Nigel Poulton",
+                Price = 54.99M,
+                LaunchDate = DateTime.Now
             };
 
-            var response = await _httpClient.PostAsJsonAsync("api/person/v1", request);
+            var response = await _httpClient.PostAsJsonAsync("api/book/v1", request);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
-            _person = await response.Content.ReadFromJsonAsync<PersonDTO>();
+            _book = await response.Content.ReadFromJsonAsync<BookDTO>();
 
             AssertLinkPattern(content, "collection");
             AssertLinkPattern(content, "self");
@@ -57,17 +56,17 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
             AssertLinkPattern(content, "delete");
         }
 
-        [Fact(DisplayName = "02 - Update Person")]
+        [Fact(DisplayName = "02 - Update Book")]
         [TestPriority(2)]
-        public async Task UpdatePerson_ShouldContainHateoasLinks()
+        public async Task UpdateBook_ShouldContainHateoasLinks()
         {
-            _person!.LastName = "Heinemeier Hansson";
+            _book!.Title = "Docker Deep Dive - 2° Edition";
 
-            var response = await _httpClient.PutAsJsonAsync("api/person/v1", _person);
+            var response = await _httpClient.PutAsJsonAsync("api/book/v1", _book);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
-            _person = await response.Content.ReadFromJsonAsync<PersonDTO>();
+            _book = await response.Content.ReadFromJsonAsync<BookDTO>();
 
             AssertLinkPattern(content, "collection");
             AssertLinkPattern(content, "self");
@@ -76,16 +75,14 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
             AssertLinkPattern(content, "delete");
         }
 
-        [Fact(DisplayName = "03 - Disable Person By ID")]
+        [Fact(DisplayName = "03 - Get Book By ID")]
         [TestPriority(3)]
-        public async Task DisablePersonById_ShouldContainHateoasLinks()
+        public async Task GetBookById_ShouldContainHateoasLinks()
         {
-            var response = await _httpClient.PatchAsync($"api/person/v1/{_person.Id}", null);
+            var response = await _httpClient.GetAsync($"api/book/v1/{_book.Id}");
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
-            _person = await response.Content.ReadFromJsonAsync<PersonDTO>();
-
             AssertLinkPattern(content, "collection");
             AssertLinkPattern(content, "self");
             AssertLinkPattern(content, "create");
@@ -93,42 +90,27 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
             AssertLinkPattern(content, "delete");
         }
 
-        [Fact(DisplayName = "04 - Get Person By ID")]
+        [Fact(DisplayName = "04 - Delete Book By ID")]
         [TestPriority(4)]
-        public async Task GetPersonById_ShouldContainHateoasLinks()
+        public async Task DeleteBookById_ShouldReturnNoContent()
         {
-            var response = await _httpClient.GetAsync($"api/person/v1/{_person.Id}");
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            AssertLinkPattern(content, "collection");
-            AssertLinkPattern(content, "self");
-            AssertLinkPattern(content, "create");
-            AssertLinkPattern(content, "update");
-            AssertLinkPattern(content, "delete");
-        }
-
-        [Fact(DisplayName = "05 - Delete Person By ID")]
-        [TestPriority(5)]
-        public async Task DeletePersonById_ShouldReturnNoContent()
-        {
-            var response = await _httpClient.DeleteAsync($"api/person/v1/{_person.Id}");
+            var response = await _httpClient.DeleteAsync($"api/book/v1/{_book.Id}");
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }
 
-        [Fact(DisplayName = "06 - Find All Persons")]
-        [TestPriority(6)]
-        public async Task FindAll_ShouldReturnLinksForEachPerson()
+        [Fact(DisplayName = "05 - Find All Books")]
+        [TestPriority(5)]
+        public async Task FindAll_ShouldReturnLinksForEachBook()
         {
             // Act
-            var response = await _httpClient.GetAsync("api/person/v1");
+            var response = await _httpClient.GetAsync("api/book/v1");
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
 
             // Regex para capturar todos os "id" do retorno
             var idMatches = Regex.Matches(content, @"""id"":\s*(\d+)");
-            idMatches.Count.Should().BeGreaterThan(0, "There should be at least one person");
+            idMatches.Count.Should().BeGreaterThan(0, "There should be at least one book");
 
             foreach (Match match in idMatches)
             {
@@ -141,16 +123,16 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
                 {
                     var pattern = rel switch
                     {
-                        "self" or "delete" => $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/person/v1/{id}""",
-                        _ => $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/person/v1"""
+                        "self" or "delete" => $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/book/v1/{id}""",
+                        _ => $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/book/v1"""
                     };
 
                     Regex.IsMatch(content, pattern, RegexOptions.IgnoreCase)
-                         .Should().BeTrue($"Link '{rel}' should exist for person {id}");
+                         .Should().BeTrue($"Link '{rel}' should exist for book {id}");
 
                     // Validar que existe type
                     var typePattern = $@"""rel"":\s*""{rel}"".*?""type"":\s*""[^""]+""";
-                    Regex.IsMatch(content, typePattern).Should().BeTrue($"Link '{rel}' must have a type for person {id}");
+                    Regex.IsMatch(content, typePattern).Should().BeTrue($"Link '{rel}' must have a type for book {id}");
                 }
             }
         }

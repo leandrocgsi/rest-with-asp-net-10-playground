@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Hypermedia.Constants;
-using RestWithASPNET10Erudio.Hypermedia.Utils;
 
 namespace RestWithASPNET10Erudio.Hypermedia.Enricher
 {
@@ -9,48 +8,53 @@ namespace RestWithASPNET10Erudio.Hypermedia.Enricher
     {
         protected override Task EnrichModel(BookDTO content, IUrlHelper urlHelper)
         {
-            var baseUrl = urlHelper.BuildBaseUrl("DefaultApi", "api/person");
+            var request = urlHelper.ActionContext.HttpContext.Request;
 
-            content.Links.Add(new HyperMediaLink
-            {
-                Action = HttpActionVerb.GET,
-                Href = baseUrl,
-                Rel = RelationType.Collection,
-                Type = ResponseTypeFormat.DefaultGet
-            });
-            content.Links.Add(new HyperMediaLink
-            {
-                Action = HttpActionVerb.GET,
-                Href = $"{baseUrl}/{content.Id}",
-                Rel = RelationType.Self,
-                Type = ResponseTypeFormat.DefaultGet
-            });
+            var baseUrl = $"{request.Scheme}://{request.Host}/api/book/v1";
 
-            content.Links.Add(new HyperMediaLink
-            {
-                Action = HttpActionVerb.POST,
-                Href = baseUrl,
-                Rel = RelationType.Create,
-                Type = ResponseTypeFormat.DefaultPost
-            });
-
-            content.Links.Add(new HyperMediaLink
-            {
-                Action = HttpActionVerb.PUT,
-                Href = baseUrl,
-                Rel = RelationType.Update,
-                Type = ResponseTypeFormat.DefaultPut
-            });
-
-            content.Links.Add(new HyperMediaLink
-            {
-                Action = HttpActionVerb.DELETE,
-                Href = $"{baseUrl}/{content.Id}",
-                Rel = RelationType.Delete,
-                Type = "int"
-            });
+            content.Links.AddRange(GenerateLinks(content.Id, baseUrl));
 
             return Task.CompletedTask;
+        }
+
+        private IEnumerable<HyperMediaLink> GenerateLinks(long id, string baseUrl)
+        {
+            return new List<HyperMediaLink>
+            {
+                new HyperMediaLink
+                {
+                    Rel = RelationType.Collection,
+                    Href = baseUrl,
+                    Type = ResponseTypeFormat.DefaultGet,
+                    Action = HttpActionVerb.GET
+                },
+                new HyperMediaLink
+                {
+                    Rel = RelationType.Self,
+                    Href = $"{baseUrl}/{id}",
+                    Type = ResponseTypeFormat.DefaultGet,
+                    Action = HttpActionVerb.GET
+                },
+                new HyperMediaLink
+                {
+                    Rel = RelationType.Create,
+                    Href = baseUrl,
+                    Type = ResponseTypeFormat.DefaultPost,
+                    Action = HttpActionVerb.POST
+                },
+                new() {
+                    Rel = RelationType.Update,
+                    Href = baseUrl,
+                    Type = ResponseTypeFormat.DefaultPut,
+                    Action = HttpActionVerb.PUT
+                },
+                new() {
+                    Rel = RelationType.Delete,
+                    Href = $"{baseUrl}/{id}",
+                    Type = ResponseTypeFormat.DefaultDelete,
+                    Action = HttpActionVerb.DELETE
+                }
+            };
         }
     }
 }
