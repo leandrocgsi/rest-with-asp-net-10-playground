@@ -29,7 +29,7 @@ namespace RestWithASPNET10Erudio.Tests.UnitTests
             // Assert
             sort.Should().Be("asc");
             size.Should().Be(10);
-            offset.Should().Be(10);
+            offset.Should().Be(10); // (page-1)*pageSize
 
             query.Should().ContainEquivalentOf("SELECT * FROM person p WHERE 1 = 1 AND p.first_name LIKE '%John%'");
             query.Should().ContainEquivalentOf("ORDER BY p.first_name asc");
@@ -65,6 +65,31 @@ namespace RestWithASPNET10Erudio.Tests.UnitTests
             query.Should().NotContainEquivalentOf("first_name LIKE");
 
             countQuery.Should().ContainEquivalentOf("SELECT COUNT(*) FROM person p WHERE 1 = 1");
+        }
+
+        [Fact]
+        public void BuildQueries_ShouldForcePageMinimumToOne()
+        {
+            // Arrange
+            int page = 0; // valor inválido enviado pelo cliente
+            int pageSize = 5;
+
+            // Act
+            var (_, _, _, _, offset) = _service.BuildQueries("Leo", "asc", pageSize, page);
+
+            // Assert
+            offset.Should().Be(0); // primeira página
+        }
+
+        [Fact]
+        public void BuildQueries_ShouldCalculateCorrectOffset_ForHigherPages()
+        {
+            int page = 3;
+            int pageSize = 10;
+
+            var (_, _, _, _, offset) = _service.BuildQueries("Mark", "asc", pageSize, page);
+
+            offset.Should().Be(20); // (3-1)*10
         }
     }
 }

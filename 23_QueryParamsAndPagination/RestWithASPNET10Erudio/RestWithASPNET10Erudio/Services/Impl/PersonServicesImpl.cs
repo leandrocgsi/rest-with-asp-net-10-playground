@@ -57,14 +57,20 @@ namespace RestWithASPNET10Erudio.Services.Impl
                 .Adapt<List<PersonDTO>>();
         }
 
-        public PagedSearchDTO<PersonDTO> FindWithPagedSearch(string name, string sortDirection, int pageSize, int page)
+        public PagedSearchDTO<PersonDTO> FindWithPagedSearch(
+            string name,
+            string sortDirection,
+            int pageSize,
+            int page)
         {
-            var (query, countQuery, sort, size, offset)
-                = BuildQueries(name, sortDirection, pageSize, page);
+            // Chama BuildQueries para gerar as queries completas
+            var (query, countQuery, sort, size, offset) = BuildQueries(name, sortDirection, pageSize, page);
 
+            // Executa as queries no repositório
             var persons = _repository.FindWithPagedSearch(query);
             var totalResults = _repository.GetCount(countQuery);
 
+            // Retorna DTO com paginação
             return new PagedSearchDTO<PersonDTO>
             {
                 CurrentPage = page,
@@ -75,28 +81,40 @@ namespace RestWithASPNET10Erudio.Services.Impl
             };
         }
 
-        // Novo método isolado só para montar queries
-        public (string Query, string CountQuery, string Sort, int Size, int Offset)
-            BuildQueries(string name, string sortDirection, int pageSize, int page)
+        // Responsável apenas por montar queries
+        public (string Query, string CountQuery, string Sort, int Size, int Offset) BuildQueries(
+            string name, string sortDirection, int pageSize, int page)
         {
-            var offset = page > 0 ? (page - 1) * pageSize : 0;
-            var sort = !string.IsNullOrEmpty(sortDirection) &&
-                       sortDirection.Equals("desc", StringComparison.OrdinalIgnoreCase)
-                       ? "desc" : "asc";
+            // ===== Mudança: página mínima = 1 =====
+            page = Math.Max(1, page);
+
+            // Offset para SQL Server
+            var offset = (page - 1) * pageSize;
+
+            // PageSize mínimo = 1
             var size = pageSize < 1 ? 1 : pageSize;
 
-            var baseQuery = "from person p where 1 = 1";
-            if (!string.IsNullOrEmpty(name))
-                baseQuery += $" and p.first_name like '%{name}%'";
+            // ===== Mudança: regra de sort atualizada =====
+            var sort = string.Equals(
+                sortDirection, "desc",
+                StringComparison.OrdinalIgnoreCase) ? "desc" : "asc";
 
+            // Montagem da query base
+            var baseQuery = "FROM person p WHERE 1 = 1";
+            if (!string.IsNullOrWhiteSpace(name))
+                baseQuery += $" AND p.first_name LIKE '%{name}%'";
+
+            // Query de dados completa para SQL Server
             var query = $@"
-            select * {baseQuery}
-            order by p.first_name {sort}
-            offset {offset} rows fetch next {size} rows only";
+                SELECT * {baseQuery}
+                ORDER BY p.first_name {sort}
+                OFFSET {offset} ROWS FETCH NEXT {size} ROWS ONLY";
 
-            var countQuery = $"select count(*) {baseQuery}";
+            // Query de contagem
+            var countQuery = $"SELECT COUNT(*) {baseQuery}";
 
             return (query, countQuery, sort, size, offset);
         }
+
     }
 }

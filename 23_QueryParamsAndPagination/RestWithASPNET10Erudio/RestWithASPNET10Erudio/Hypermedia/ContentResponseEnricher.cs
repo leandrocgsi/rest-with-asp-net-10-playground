@@ -48,6 +48,7 @@ namespace RestWithASPNET10Erudio.Hypermedia
                 {
                     foreach (var element in pagedSearch.List.ToList())
                     {
+                        element.Links?.Clear();
                         await EnrichModel(element, urlHelper); // ALTERADO: agora aguardamos a Task
                     }
                 }
