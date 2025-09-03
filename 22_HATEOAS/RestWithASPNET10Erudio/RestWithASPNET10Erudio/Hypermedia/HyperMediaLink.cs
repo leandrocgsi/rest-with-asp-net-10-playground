@@ -1,24 +1,34 @@
-﻿namespace RestWithASPNET10Erudio.Hypermedia
+﻿using System.Xml.Serialization;
+
+namespace RestWithASPNET10Erudio.Hypermedia
 {
     public class HyperMediaLink
     {
-        private string _href;
-        private readonly object _lock = new object();
+        private string _href = string.Empty;
 
-        public string Rel { get; set; }
+        [XmlAttribute]
+        public string Rel { get; set; } = string.Empty;
 
+        [XmlAttribute]
         public string Href
         {
-            get => ThreathHref();
-            set => _href = value;
+            get => _href?.Replace("%2F", "/") ?? string.Empty;
+            set => _href = value ?? string.Empty;
         }
 
-        public string Type { get; set; }
-        public string Action { get; set; }
+        [XmlAttribute]
+        public string Type { get; set; } = "application/json";
 
-        private string ThreathHref()
-        {
-            lock (_lock) return _href?.Replace("%2F", "/");
-        }
+        [XmlAttribute]
+        public string Action { get; set; } = string.Empty;
+        //public string Href
+        //{
+        //    get => ThreathHref();
+        //    set => _href = value;
+        //}
+        //private string ThreathHref()
+        //{
+        //    lock (_lock) return _href?.Replace("%2F", "/");
+        //}
     }
 }

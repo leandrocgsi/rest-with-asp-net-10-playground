@@ -1,38 +1,49 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Hypermedia.Constants;
-using RestWithASPNET10Erudio.Hypermedia.Utils;
-using System.Text;
-using System.Threading;
 
 namespace RestWithASPNET10Erudio.Hypermedia.Enricher
 {
     public class PersonEnricher : ContentResponseEnricher<PersonDTO>
     {
-        private static readonly object _lock = new object();
-        private readonly ILogger<PersonEnricher> _logger;
+        //private readonly ILogger<PersonEnricher> _logger;
+
+        // public PersonEnricher(ILogger<PersonEnricher> logger)
+        public PersonEnricher()
+        {
+            //_logger = logger;
+        }
 
         protected override Task EnrichModel(PersonDTO content, IUrlHelper urlHelper)
         {
-            _logger.LogInformation("Enriching PersonDTO {FirstName} {LastName}", content.FirstName, content.LastName);
+            // _logger.LogInformation(...); // Mantenha se necessário
 
+            var collectionUrl = urlHelper.Action("Get", "Person"); // Para lista: api/person/v1
+            var selfUrl = urlHelper.Action("Get", "Person", new { id = content.Id }); // api/person/v1/{id}
+            var createUrl = urlHelper.Action("Post", "Person"); // api/person/v1
+            var updateUrl = urlHelper.Action("Put", "Person"); // api/person/v1 (corpo inclui ID)
+            var patchUrl = urlHelper.Action("Disable", "Person", new { id = content.Id }); // api/person/v1/{id} (nome da ação é "Disable" para Patch)
+            var deleteUrl = urlHelper.Action("Delete", "Person", new { id = content.Id }); // api/person/v1/{id}
 
-            // var baseUrl = urlHelper.BuildBaseUrl("DefaultApi", "api/person");
-            // var baseUrl = BuildBaseUrl("DefaultApi", "api/person");
-            var path = "api/person";
-            var baseUrl = BuildBaseUrl(urlHelper, path);
+            // Fallback se a URL principal não for gerada (ex.: roteamento mal configurado)
+            if (string.IsNullOrEmpty(collectionUrl))
+            {
+                // _logger.LogWarning("Não foi possível gerar collectionUrl para PersonDTO {Id}", content.Id);
+                return Task.CompletedTask;
+            }
 
             content.Links.Add(new HyperMediaLink
             {
                 Action = HttpActionVerb.GET,
-                Href = baseUrl,
+                Href = collectionUrl,
                 Rel = RelationType.Collection,
                 Type = ResponseTypeFormat.DefaultGet
             });
+
             content.Links.Add(new HyperMediaLink
             {
                 Action = HttpActionVerb.GET,
-                Href = $"{baseUrl}/{content.Id}",
+                Href = selfUrl,
                 Rel = RelationType.Self,
                 Type = ResponseTypeFormat.DefaultGet
             });
@@ -40,7 +51,7 @@ namespace RestWithASPNET10Erudio.Hypermedia.Enricher
             content.Links.Add(new HyperMediaLink
             {
                 Action = HttpActionVerb.POST,
-                Href = baseUrl,
+                Href = createUrl,
                 Rel = RelationType.Create,
                 Type = ResponseTypeFormat.DefaultPost
             });
@@ -48,7 +59,7 @@ namespace RestWithASPNET10Erudio.Hypermedia.Enricher
             content.Links.Add(new HyperMediaLink
             {
                 Action = HttpActionVerb.PUT,
-                Href = baseUrl,
+                Href = updateUrl,
                 Rel = RelationType.Update,
                 Type = ResponseTypeFormat.DefaultPut
             });
@@ -56,32 +67,21 @@ namespace RestWithASPNET10Erudio.Hypermedia.Enricher
             content.Links.Add(new HyperMediaLink
             {
                 Action = HttpActionVerb.PATCH,
-                Href = $"{baseUrl}/{content.Id}",
-                Rel = RelationType.Update,
+                Href = patchUrl,
+                Rel = RelationType.Update, // Ou use RelationType.Patch se quiser distinguir
                 Type = ResponseTypeFormat.DefaultPatch
             });
 
             content.Links.Add(new HyperMediaLink
             {
                 Action = HttpActionVerb.DELETE,
-                Href = $"{baseUrl}/{content.Id}",
+                Href = deleteUrl,
                 Rel = RelationType.Delete,
-                Type = "int"
+                Type = ResponseTypeFormat.DefaultDelete
             });
 
-            _logger.LogDebug("Links added for PersonDTO {FirstName} {LastName}, total links: {Count}",
-       content.FirstName, content.LastName, content.Links.Count);
-
+            // _logger.LogDebug(...);
             return Task.CompletedTask;
-        }
-
-        private string BuildBaseUrl(IUrlHelper urlHelper, string path)
-        {
-            lock (_lock)
-            {
-                var url = new { controller = path };
-                return new StringBuilder(urlHelper.Link("DefaultApi", url)).Replace("%2F", "/").ToString();
-            };
         }
     }
 }
