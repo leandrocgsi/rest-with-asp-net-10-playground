@@ -41,6 +41,11 @@ namespace RestWithASPNET10Erudio.Tests.UnitTests
         [Fact]
         public void BuildQueries_ShouldDefaultToAsc_WhenSortIsInvalidOrNull()
         {
+            // Os underscores (_) que você vê como parâmetros em
+            // chamadas de método em C# funcionam como placeholders
+            // descartáveis, usados quando você precisa capturar
+            // apenas alguns valores de uma tupla ou parâmetro,
+            // mas não se importa com os outros.
             var (_, _, sort1, _, _) = _service.BuildQueries("Alice", "invalid", 5, 1);
             var (_, _, sort2, _, _) = _service.BuildQueries("Alice", null, 5, 1);
 
