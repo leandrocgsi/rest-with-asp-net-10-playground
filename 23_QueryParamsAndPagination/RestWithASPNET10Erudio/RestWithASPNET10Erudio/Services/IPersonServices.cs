@@ -20,11 +20,7 @@ namespace RestWithASPNET10Erudio.Services
 
         List<PersonDTO> FindByName(string firstName, string lastName);
 
-        PagedSearchDTO<PersonDTO> FindWithPagedSearch(
-            string name,
-            string sortDirection,
-            int pageSize,
-            int page);
-
+        PagedSearchDTO<PersonDTO> FindWithPagedSearch
+            (string name, string sortDirection, int pageSize, int page);
     }
 }

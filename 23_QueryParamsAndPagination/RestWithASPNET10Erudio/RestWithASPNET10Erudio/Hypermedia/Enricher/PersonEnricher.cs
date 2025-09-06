@@ -6,64 +6,68 @@ namespace RestWithASPNET10Erudio.Hypermedia.Enricher
 {
     public class PersonEnricher : ContentResponseEnricher<PersonDTO>
     {
-        protected override Task EnrichModel(PersonDTO content, IUrlHelper urlHelper)
+        protected override Task EnrichModel(
+            PersonDTO content, IUrlHelper urlHelper)
         {
             var request = urlHelper.ActionContext.HttpContext.Request;
 
-            var baseUrl = $"{request.Scheme}://{request.Host}/api/person/v1";
+            var baseUrl = $"{request.Scheme}://" +
+                $"{request.Host.ToUriComponent()}" +
+                $"{request.PathBase.ToUriComponent()}/api/person/v1";
 
             content.Links.AddRange(GenerateLinks(content.Id, baseUrl));
-
             return Task.CompletedTask;
         }
 
-        private IEnumerable<HyperMediaLink> GenerateLinks(long id, string baseUrl)
+        private IEnumerable<HypermediaLink> GenerateLinks(long id, string baseUrl)
         {
-            return new List<HyperMediaLink>
-            {
-                new HyperMediaLink
+            //return new List<HypermediaLink>
+            return
+            [
+                // This new HypermediaLink is equal to new()
+                new()
                 {
-                    Rel = RelationType.Collection,
-                    Href = baseUrl,
+                    Rel = RelationType.COLLECTION,
+                    Href = $"{baseUrl}",
                     Type = ResponseTypeFormat.DefaultGet,
                     Action = HttpActionVerb.GET
                 },
-                new HyperMediaLink
+                new()
                 {
-                    Rel = RelationType.Self,
+                    Rel = RelationType.SELF,
                     Href = $"{baseUrl}/{id}",
                     Type = ResponseTypeFormat.DefaultGet,
                     Action = HttpActionVerb.GET
                 },
-                new HyperMediaLink
+                new()
                 {
-                    Rel = RelationType.Create,
-                    Href = baseUrl,
+                    Rel = RelationType.CREATE,
+                    Href = $"{baseUrl}",
                     Type = ResponseTypeFormat.DefaultPost,
                     Action = HttpActionVerb.POST
                 },
-                new HyperMediaLink
+                new()
                 {
-                    Rel = RelationType.Update,
-                    Href = baseUrl,
+                    Rel = RelationType.UPDATE,
+                    Href = $"{baseUrl}",
                     Type = ResponseTypeFormat.DefaultPut,
                     Action = HttpActionVerb.PUT
                 },
-                new HyperMediaLink
+                new()
                 {
-                    Rel = RelationType.Update,
+                    Rel = RelationType.PATCH,
                     Href = $"{baseUrl}/{id}",
                     Type = ResponseTypeFormat.DefaultPatch,
                     Action = HttpActionVerb.PATCH
                 },
-                new HyperMediaLink
+                new()
                 {
-                    Rel = RelationType.Delete,
+                    Rel = RelationType.DELETE,
                     Href = $"{baseUrl}/{id}",
                     Type = ResponseTypeFormat.DefaultDelete,
                     Action = HttpActionVerb.DELETE
-                }
-            };
+                },
+            ];
         }
     }
 }

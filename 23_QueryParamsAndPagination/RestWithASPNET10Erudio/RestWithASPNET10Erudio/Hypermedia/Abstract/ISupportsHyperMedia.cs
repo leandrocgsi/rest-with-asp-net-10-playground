@@ -1,7 +1,7 @@
 ﻿namespace RestWithASPNET10Erudio.Hypermedia.Abstract
 {
-    public interface ISupportsHyperMedia
+    public interface ISupportsHypermedia
     {
-        List<HyperMediaLink> Links { get; set; }
+        List<HypermediaLink> Links { get; set; }
     }
 }

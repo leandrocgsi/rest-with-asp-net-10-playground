@@ -11,7 +11,7 @@ builder.AddSerilogLogging();
 
 builder.Services.AddControllers(options =>
     {
-        options.Filters.Add<HyperMediaFilter>();
+        options.Filters.Add<HypermediaFilter>();
     })
     .AddContentNegotiation();
 

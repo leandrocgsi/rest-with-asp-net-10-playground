@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RestWithASPNET10Erudio.Data.DTO.V1;
+using RestWithASPNET10Erudio.Hypermedia.Utils;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
 using System.Net;
 using System.Net.Http.Json;
@@ -8,8 +9,8 @@ using System.Net.Http.Json;
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
 {
     [TestCaseOrderer(
-        TestConstants.TestCaseOrdererFullName,
-        TestConstants.TestCaseOrdererAssembly)]
+        TestConfigs.TestCaseOrdererFullName,
+        TestConfigs.TestCaseOrdererAssembly)]
     public class PersonControllerJsonTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
@@ -146,36 +147,47 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }
 
-        [Fact(DisplayName = "06 - Find all Person")]
+        [Fact(DisplayName = "06 - Find all Person (Paged)")]
         [TestPriority(6)]
-        public async Task FindAllPerson_ShouldReturnListOfPerson()
+        public async Task FindAllPerson_ShouldReturnPagedResultWithPersons()
         {
+            // ---------------------------
             // Arrange & Act
-            var response = await _httpClient
-                .GetAsync("api/person/v1");
+            // ---------------------------
+            // Agora a rota precisa de sortDirection, pageSize e page.
+            var response = await _httpClient.GetAsync(
+                "api/person/v1/asc/10/1");
 
+            // ---------------------------
             // Assert
+            // ---------------------------
             response.EnsureSuccessStatusCode();
-            
-            var list = await response.Content
-                .ReadFromJsonAsync<List<PersonDTO>>();
 
-            list.Should().NotBeNull();
-            list.Count.Should().BeGreaterThan(0);
+            var page = await response.Content
+                .ReadFromJsonAsync<PagedSearchDTO<PersonDTO>>();
 
-            var first = list.First(p => p.FirstName == "Ayrton");
-            first.LastName.Should().Be("Senna");
-            first.Address.Should().Be("São Paulo - Brasil");
-            first.Enabled.Should().BeTrue();
+            page.Should().NotBeNull();
+            page.List.Should().NotBeNull();
+            page.List.Count.Should().BeGreaterThan(0);
+
+            // validações do conteúdo
+            var first = page.List.First(p => p.FirstName == "Abbie");
+            first.LastName.Should().Be("Bassford");
+            first.Address.Should().Be("PO Box 88145");
+            first.Enabled.Should().BeFalse();
             first.Gender.Should().Be("Male");
 
-            /*
-            var fifth = list.First(p => p.FirstName == "Ada");
-            fifth.LastName.Should().Be("Lovelace");
-            fifth.Address.Should().Be("London - England");
-            fifth.Enabled.Should().BeTrue();
-            fifth.Gender.Should().Be("Female");
-            */
+            var third = page.List.First(p => p.FirstName == "Abner");
+            third.LastName.Should().Be("Castilla");
+            third.Address.Should().Be("8th Floor");
+            third.Enabled.Should().BeFalse();
+            third.Gender.Should().Be("Male");
+
+            // validações da paginação
+            page.CurrentPage.Should().BeGreaterThan(0);
+            page.PageSize.Should().BeGreaterThan(0);
+            page.TotalResults.Should().BeGreaterThan(0);
+            page.SortDirections.Should().NotBeNullOrEmpty();
         }
     }
 }

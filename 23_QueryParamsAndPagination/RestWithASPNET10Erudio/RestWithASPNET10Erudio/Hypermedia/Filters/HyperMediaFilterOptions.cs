@@ -2,7 +2,7 @@
 
 namespace RestWithASPNET10Erudio.Hypermedia.Filters
 {
-    public class HyperMediaFilterOptions
+    public class HypermediaFilterOptions
     {
         public List<IResponseEnricher> ContentResponseEnricherList { get; set; } = [];
     }

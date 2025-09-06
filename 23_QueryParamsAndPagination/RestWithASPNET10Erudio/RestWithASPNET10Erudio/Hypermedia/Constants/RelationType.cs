@@ -2,15 +2,15 @@
 {
     public sealed class RelationType
     {
-        public const string Collection = "collection";
-        public const string Self = "self";
-        public const string Create = "create";
-        public const string Update = "update";
-        public const string Delete = "delete";
-        public const string Patch = "patch";
-        public const string Next = "next";
-        public const string Previous = "previous";
-        public const string First = "first";
-        public const string Last = "last";
+        public const string COLLECTION = "collection";
+        public const string SELF = "self";
+        public const string CREATE = "create";
+        public const string UPDATE = "update";
+        public const string DELETE = "delete";
+        public const string PATCH = "patch";
+        public const string FIRST = "first";
+        public const string NEXT = "next";
+        public const string PREVIOUS = "previous";
+        public const string LAST = "last";
     }
 }

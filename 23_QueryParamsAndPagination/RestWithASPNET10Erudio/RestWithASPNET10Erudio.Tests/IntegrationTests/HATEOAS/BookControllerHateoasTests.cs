@@ -9,8 +9,8 @@ using System.Text.RegularExpressions;
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
 {
     [TestCaseOrderer(
-        TestConstants.TestCaseOrdererFullName,
-        TestConstants.TestCaseOrdererAssembly)]
+        TestConfigs.TestCaseOrdererFullName,
+        TestConfigs.TestCaseOrdererAssembly)]
     public class BookControllerHateoasTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;

@@ -5,23 +5,25 @@ namespace RestWithASPNET10Erudio.Configurations
 {
     public static class HATEOASConfig
     {
-        public static IServiceCollection AddHATEOASConfiguration(this IServiceCollection services)
+        public static IServiceCollection AddHATEOASConfiguration(
+            this IServiceCollection services)
         {
-            var filterOptions = new HyperMediaFilterOptions();
-            filterOptions.ContentResponseEnricherList.Add(new PersonEnricher());
-            filterOptions.ContentResponseEnricherList.Add(new BookEnricher());
-
+            var filterOptions = new HypermediaFilterOptions();
+            filterOptions.ContentResponseEnricherList.Add(
+                new PersonEnricher());
+            filterOptions.ContentResponseEnricherList.Add(
+                new BookEnricher());
             services.AddSingleton(filterOptions);
 
-            // Registrando o filtro para ser resolvido via DI
-            services.AddScoped<HyperMediaFilter>();
-
+            services.AddScoped<HypermediaFilter>();
             return services;
         }
 
-        public static void UseHATEOASRoutes(this IEndpointRouteBuilder app)
+        public static void UseHATEOASRoutes(
+            this IEndpointRouteBuilder app)
         {
-            app.MapControllerRoute("DefaultApi", "{controller=values}/v1/{id?}");
+            app.MapControllerRoute(
+                "Default", "{controller=values}/v1/{id?}");
         }
     }
 }

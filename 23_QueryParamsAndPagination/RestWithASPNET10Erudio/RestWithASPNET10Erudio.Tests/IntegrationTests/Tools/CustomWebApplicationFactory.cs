@@ -24,24 +24,23 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
             builder.ConfigureAppConfiguration((context, config) =>
             {
                 var testConfigPath = Path.Combine(
-                   Path.GetDirectoryName(
-                       Assembly.GetExecutingAssembly().Location)!,
-                   "appsettings.Test.json");
-
+                    Path.GetDirectoryName(
+                        Assembly.GetExecutingAssembly().Location)!,
+                    "appsettings.Test.json");
+                
                 config.Sources.Clear();
-                config.AddJsonFile(testConfigPath,
+                config.AddJsonFile(
+                    testConfigPath,
                     optional: false,
                     reloadOnChange: true);
             });
             builder.ConfigureServices(services =>
             {
-                // Remove DbContext registrado pelo Program.cs
                 var descriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(DbContextOptions<MSSQLContext>));
+                    d => d.ServiceType ==
+                        typeof(DbContextOptions<MSSQLContext>));
                 if (descriptor != null)
                     services.Remove(descriptor);
-
-                //  Registra DbContext com a connection string do container
                 services.AddDbContext<MSSQLContext>(options =>
                     options.UseSqlServer(_connectionString));
             });

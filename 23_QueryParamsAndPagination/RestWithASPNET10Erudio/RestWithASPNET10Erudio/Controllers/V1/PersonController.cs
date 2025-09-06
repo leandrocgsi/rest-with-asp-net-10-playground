@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Hypermedia.Filters;
+using RestWithASPNET10Erudio.Hypermedia.Utils;
+using RestWithASPNET10Erudio.Model;
 using RestWithASPNET10Erudio.Services;
 
 namespace RestWithASPNET10Erudio.Controllers.V1
 {
     [ApiController]
     [Route("api/[controller]/v1")]
+    // [EnableCors("LocalPolicy")]
     public class PersonController : ControllerBase
     {
         private IPersonServices _personService;
@@ -20,14 +23,22 @@ namespace RestWithASPNET10Erudio.Controllers.V1
             _logger = logger;
         }
 
-        [HttpGet("find-with-paged-search/{sortDirection}/{pageSize}/{page}")]
-        [ProducesResponseType((200), Type = typeof(List<PersonDTO>))]
-        [ProducesResponseType(204)]
+        //[HttpGet]
+        //[ProducesResponseType(200, Type = typeof (List<PersonDTO>))]
+        //[ProducesResponseType(400)]
+        //[ProducesResponseType(401)]
+        //public IActionResult Get()
+        //{
+        //    _logger.LogInformation("Fetching all persons");
+        //    return Ok(_personService.FindAll());
+        //}
+
+        [HttpGet("{sortDirection}/{pageSize}/{ page}")]
+        [ProducesResponseType((200), Type = typeof(PagedSearchDTO<PersonDTO>))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        [TypeFilter(typeof(HyperMediaFilter))]
-        public IActionResult GetPagedSearch(
-            [FromQuery] string name,
+        public IActionResult Get(
+            [FromQuery] string? name,
             string sortDirection,
             int pageSize,
             int page)
@@ -38,33 +49,43 @@ namespace RestWithASPNET10Erudio.Controllers.V1
             return Ok(persons);
         }
 
-
-        [HttpGet]
+        [HttpGet("find-by-name")]
         [ProducesResponseType(200, Type = typeof (List<PersonDTO>))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        public IActionResult Get()
+        public IActionResult GetByName(
+            [FromQuery] string firstName,
+            [FromQuery] string lastName
+        )
         {
-            _logger.LogInformation("Fetching all persons");
-            return Ok(_personService.FindAll());
+            _logger.LogInformation(
+                "Fetching persons by name: {firstName} {lastName}",
+                firstName, lastName);
+            return Ok(_personService.FindByName(firstName, lastName));
         }
 
-        [HttpGet("find-by-name")]
-        [ProducesResponseType((200), Type = typeof(List<PersonDTO>))]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(401)]
-        public IActionResult GetByName([FromQuery] string firstName, [FromQuery] string lastName)
-        {
-            _logger.LogInformation("Fetching persons by name: {firstName} {lastName}", firstName, lastName);
-            var persons = _personService.FindByName(firstName, lastName);
-            return Ok(persons);
-        }
+        //[HttpGet("find-with-paged-search/{sortDirection}/{pageSize}/{page}")]
+        //[ProducesResponseType((200), Type = typeof(List<PersonDTO>))]
+        //[ProducesResponseType(204)]
+        //[ProducesResponseType(400)]
+        //[ProducesResponseType(401)]
+        //public IActionResult GetPagedSearch(
+        //[FromQuery] string name,
+        //string sortDirection,
+        //int pageSize,
+        //int page)
+        //{
+        //    _logger.LogInformation("Fetching persons with paged search: name={name}, sortDirection={sortDirection}, pageSize={pageSize}, page={page}",
+        //        name, sortDirection, pageSize, page);
+        //    var persons = _personService.FindWithPagedSearch(name, sortDirection, pageSize, page);
+        //    return Ok(persons);
+        //}
 
         [HttpGet("{id}")]
         [ProducesResponseType(200, Type = typeof(PersonDTO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
+        // [EnableCors("LocalPolicy")]
         public IActionResult Get(long id)
         {
             _logger.LogInformation("Fetching person with ID {id}", id);
@@ -81,6 +102,7 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         [ProducesResponseType(200, Type = typeof(PersonDTO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
+        // [EnableCors("MultipleOriginPolicy")]
         public IActionResult Post([FromBody] PersonDTO person)
         {
             _logger.LogInformation("Creating new Person: {firstName}", person.FirstName);
