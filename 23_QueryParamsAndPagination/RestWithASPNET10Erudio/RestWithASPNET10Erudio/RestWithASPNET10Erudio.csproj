@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <None Include="Hypermedia\Utils\PagedSearchDTO.cs" />
+    <None Include="Model\PagedSearch.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -61,21 +61,10 @@ namespace RestWithASPNET10Erudio.Services.Impl
             int pageSize,
             int page)
         {
-            page = Math.Max(1, page);
-            var (query, countQuery, sort, size, offset) = BuildQueries(
+            var result = _repository.FindWithPagedSearch(
                 name, sortDirection, pageSize, page);
 
-            var persons = _repository.FindWithPagedSearch(query);
-            var totalResults = _repository.GetCount(countQuery);
-
-            return new PagedSearchDTO<PersonDTO>
-            {
-                CurrentPage = page,
-                List = persons.Adapt<List<PersonDTO>>(),
-                PageSize = size,
-                SortDirections = sort,
-                TotalResults = totalResults
-            };
+            return result.Adapt<PagedSearchDTO<PersonDTO>>();
         }
 
         private (
