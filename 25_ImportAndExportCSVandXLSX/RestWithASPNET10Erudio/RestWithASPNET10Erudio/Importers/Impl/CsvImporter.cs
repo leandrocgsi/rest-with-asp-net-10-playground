@@ -13,13 +13,27 @@ namespace RestWithASPNET10Erudio.Importers.Impl
             using var reader = new StreamReader(fileStream);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-                HasHeaderRecord = true,
+                HasHeaderRecord = true,        // considera a primeira linha como cabeçalho
                 TrimOptions = TrimOptions.Trim,
                 IgnoreBlankLines = true
             });
 
-            var records = csv.GetRecords<PersonDTO>();
-            return await Task.FromResult(records.ToList());
+            var records = new List<PersonDTO>();
+
+            await foreach (var record in csv.GetRecordsAsync<PersonDTO>())
+            {
+                // garante que os dados sejam válidos e cria a entidade
+                records.Add(new PersonDTO
+                {
+                    FirstName = record.FirstName,
+                    LastName = record.LastName,
+                    Address = record.Address,
+                    Gender = record.Gender,
+                    Enabled = true
+                });
+            }
+
+            return records;
         }
     }
 }

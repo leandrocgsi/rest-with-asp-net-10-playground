@@ -16,14 +16,18 @@ namespace RestWithASPNET10Erudio.Importers.Impl
 
             foreach (var row in rows)
             {
-                persons.Add(new PersonDTO
+                // valida se a linha tem dados antes de tentar converter
+                if (!row.Cell(1).IsEmpty())
                 {
-                    FirstName = row.Cell(1).GetString(),
-                    LastName = row.Cell(2).GetString(),
-                    Address = row.Cell(3).GetString(),
-                    Gender = row.Cell(4).GetString(),
-                    Enabled = true
-                });
+                    persons.Add(new PersonDTO
+                    {
+                        FirstName = row.Cell(1).GetString(),
+                        LastName = row.Cell(2).GetString(),
+                        Address = row.Cell(3).GetString(),
+                        Gender = row.Cell(4).GetString(),
+                        Enabled = true
+                    });
+                }
             }
 
             return await Task.FromResult(persons);
