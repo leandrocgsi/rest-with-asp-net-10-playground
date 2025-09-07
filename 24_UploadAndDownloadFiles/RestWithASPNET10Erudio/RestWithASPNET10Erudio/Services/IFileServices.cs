@@ -6,6 +6,6 @@ namespace RestWithASPNET10Erudio.Services
     {
         byte[] GetFile(string fileName);
         Task<FileDetailDTO> SaveFileToDisk(IFormFile file);
-        Task<List<FileDetailDTO>> SaveFilesToDisk(IList<IFormFile> files);
+        Task<List<FileDetailDTO>> SaveFilesToDisk(List<IFormFile> files);
     }
 }

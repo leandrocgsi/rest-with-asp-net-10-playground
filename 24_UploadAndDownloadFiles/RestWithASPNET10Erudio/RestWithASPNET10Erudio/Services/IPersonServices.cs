@@ -24,7 +24,7 @@ namespace RestWithASPNET10Erudio.Services
             string name,
             string sortDirection,
             int pageSize,
-            int page);
-
+            int page
+        );
     }
 }

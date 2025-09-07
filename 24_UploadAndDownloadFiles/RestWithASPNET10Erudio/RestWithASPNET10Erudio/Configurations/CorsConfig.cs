@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System.IO;
 
 namespace RestWithASPNET10Erudio.Configurations
 {
@@ -48,11 +47,11 @@ namespace RestWithASPNET10Erudio.Configurations
         public static IApplicationBuilder UseCorsConfiguration(this IApplicationBuilder app,
             IConfiguration configuration)
         {
+
             var origins = GetAllowedOrigins(configuration);
 
             app.Use(async (context, next) =>
             {
-
                 var selfOrigin = $"{context.Request.Scheme}://{context.Request.Host}";
 
                 var origin = context.Request.Headers["Origin"].ToString();

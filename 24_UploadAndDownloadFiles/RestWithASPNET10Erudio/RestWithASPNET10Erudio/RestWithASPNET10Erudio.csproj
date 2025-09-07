@@ -7,7 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="UploadDir\" />
     <Folder Include="Utils\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Hypermedia\Utils\PagedSearchDTO.cs" />
+    <None Include="Model\PagedSearch.cs" />
   </ItemGroup>
 
   <ItemGroup>

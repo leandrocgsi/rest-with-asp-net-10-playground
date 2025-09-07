@@ -13,7 +13,6 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
         {
             Container = new MsSqlBuilder()
                 .WithPassword("@Admin123$")
-                //.WithPortBinding(0, 1433)
                 .Build();
         }
         public async Task InitializeAsync()

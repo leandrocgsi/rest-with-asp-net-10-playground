@@ -8,8 +8,8 @@ using System.Net.Http.Json;
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
 {
     [TestCaseOrderer(
-        TestConstants.TestCaseOrdererFullName,
-        TestConstants.TestCaseOrdererAssembly)]
+        TestConfigs.TestCaseOrdererFullName,
+        TestConfigs.TestCaseOrdererAssembly)]
     public class PersonCorsIntegrationTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;

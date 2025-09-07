@@ -1,17 +1,19 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Services;
 
 namespace RestWithASPNET10Erudio.Controllers.V1
 {
+
     [ApiController]
     [Route("api/[controller]/v1")]
-    public class FileController(IFileServices fileServices)
-        : Controller
+    public class FileController(
+        IFileServices fileServices,
+        ILogger<FileController> logger)
+    : Controller
     {
-
-        private readonly IFileServices _fileServices = fileServices;
+        private IFileServices _fileServices = fileServices;
+        private readonly ILogger<FileController> _logger = logger;
 
         [HttpGet("downloadFile/{fileName}")]
         [ProducesResponseType(200, Type = typeof(byte[]))]
@@ -19,7 +21,7 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [Produces("application/octet-stream")]
-        public IActionResult GetFileAsync(string fileName)
+        public IActionResult DownloadFile(string fileName)
         {
             var buffer = _fileServices.GetFile(fileName);
             if (buffer == null || buffer.Length == 0)
@@ -30,16 +32,16 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         }
 
         [HttpPost("uploadFile")]
-        [Consumes("multipart/form-data")]
         [ProducesResponseType(200, Type = typeof(FileDetailDTO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        [Produces("application/json")]
-        // public async Task<IActionResult> UploadOneFile([FromForm(Name = "file")] IFormFile file)
-        public async Task<IActionResult> UploadOneFile([FromForm] FileUploadDTO input)
+        [Produces("application/json", "application/xml")]
+        //public async Task<IActionResult> UploadFile(IFormFile file)
+        public async Task<IActionResult> UploadFile([FromForm] FileUploadDTO input)
         {
-            var detail = await _fileServices.SaveFileToDisk(input.File);
-            return Ok(detail);
+            var fileDetail = await _fileServices.SaveFileToDisk(input.File);
+            _logger.LogInformation("File {fileName} uploaded successfully.", fileDetail.DocumentName);
+            return Ok(fileDetail);
         }
 
         [HttpPost("uploadMultipleFiles")]
@@ -47,12 +49,13 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         [ProducesResponseType(200, Type = typeof(List<FileDetailDTO>))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        [Produces("application/json")]
-        // public async Task<IActionResult> UploadManyFiles([FromForm(Name = "files")] List<IFormFile> files)
-        public async Task<IActionResult> UploadMultipleFiles([FromForm] MultipleFilesUploadDTO input)
-
+        [Produces("application/json", "application/xml")]
+        public async Task<IActionResult> UploadMultipleFiles(
+            [FromForm] MultipleFilesUploadDTO input
+        )
         {
-            var details = await _fileServices.SaveFilesToDisk(input.Files);
+            var details = await _fileServices
+                .SaveFilesToDisk(input.Files);
             return Ok(details);
         }
     }

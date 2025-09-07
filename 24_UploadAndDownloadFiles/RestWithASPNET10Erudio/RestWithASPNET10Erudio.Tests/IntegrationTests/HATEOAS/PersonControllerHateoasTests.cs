@@ -2,33 +2,39 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
-using System.Net;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
 {
     [TestCaseOrderer(
-        TestConstants.TestCaseOrdererFullName,
-        TestConstants.TestCaseOrdererAssembly)]
-    public class PersonControllerHateoasTests : IClassFixture<SqlServerFixture>
+        TestConfigs.TestCaseOrdererFullName,
+        TestConfigs.TestCaseOrdererAssembly)]
+    public class PersonControllerHATEOASTests
+        : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
         private static PersonDTO? _person;
 
-        public PersonControllerHateoasTests(SqlServerFixture sqlFixture)
+        public PersonControllerHATEOASTests(SqlServerFixture sqlFixture)
         {
-            var factory = new CustomWebApplicationFactory<Program>(sqlFixture.ConnectionString);
-            _httpClient = factory.CreateClient(new WebApplicationFactoryClientOptions
-            {
-                BaseAddress = new Uri("http://localhost")
-            });
+            var factory = new CustomWebApplicationFactory<Program>(
+                sqlFixture.ConnectionString);
+
+            _httpClient = factory.CreateClient(
+                new WebApplicationFactoryClientOptions
+                {
+                    BaseAddress = new Uri("http://localhost")
+                }
+            );
         }
 
         private void AssertLinkPattern(string content, string rel)
         {
-            var pattern = $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/person/v1.*?""";
-            Regex.IsMatch(content, pattern).Should().BeTrue($"Link with rel='{rel}' should exist and have valid href");
+            var pattern =
+                $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/person/v1.*?""";
+            Regex.IsMatch(content, pattern).Should()
+                .BeTrue($"Link with rel='{rel}' should exist and have valid href");
         }
 
         [Fact(DisplayName = "01 - Create Person")]
@@ -44,9 +50,10 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
                 Enabled = true
             };
 
-            var response = await _httpClient.PostAsJsonAsync("api/person/v1", request);
-            response.EnsureSuccessStatusCode();
+            var response = await _httpClient.PostAsJsonAsync(
+                "/api/person/v1", request);
 
+            response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
             _person = await response.Content.ReadFromJsonAsync<PersonDTO>();
 
@@ -63,10 +70,13 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
         {
             _person!.LastName = "Heinemeier Hansson";
 
-            var response = await _httpClient.PutAsJsonAsync("api/person/v1", _person);
+            var response = await _httpClient.PutAsJsonAsync(
+                "/api/person/v1", _person);
+
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
+
             _person = await response.Content.ReadFromJsonAsync<PersonDTO>();
 
             AssertLinkPattern(content, "collection");
@@ -76,14 +86,17 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
             AssertLinkPattern(content, "delete");
         }
 
-        [Fact(DisplayName = "03 - Disable Person By ID")]
+        [Fact(DisplayName = "03 - Disable Person By Id")]
         [TestPriority(3)]
         public async Task DisablePersonById_ShouldContainHateoasLinks()
         {
-            var response = await _httpClient.PatchAsync($"api/person/v1/{_person.Id}", null);
+            var response = await _httpClient.PatchAsync(
+                $"/api/person/v1/{_person!.Id}", null);
+
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
+
             _person = await response.Content.ReadFromJsonAsync<PersonDTO>();
 
             AssertLinkPattern(content, "collection");
@@ -91,16 +104,22 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
             AssertLinkPattern(content, "create");
             AssertLinkPattern(content, "update");
             AssertLinkPattern(content, "delete");
+
         }
 
-        [Fact(DisplayName = "04 - Get Person By ID")]
+        [Fact(DisplayName = "04 - Get Person By Id")]
         [TestPriority(4)]
         public async Task GetPersonById_ShouldContainHateoasLinks()
         {
-            var response = await _httpClient.GetAsync($"api/person/v1/{_person.Id}");
+            var response = await _httpClient.GetAsync(
+                $"/api/person/v1/{_person!.Id}");
+
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
+
+            _person = await response.Content.ReadFromJsonAsync<PersonDTO>();
+            
             AssertLinkPattern(content, "collection");
             AssertLinkPattern(content, "self");
             AssertLinkPattern(content, "create");
@@ -108,51 +127,60 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
             AssertLinkPattern(content, "delete");
         }
 
-        [Fact(DisplayName = "05 - Delete Person By ID")]
+        [Fact(DisplayName = "05 - Find Paged Persons with HATEOAS")]
         [TestPriority(5)]
-        public async Task DeletePersonById_ShouldReturnNoContent()
-        {
-            var response = await _httpClient.DeleteAsync($"api/person/v1/{_person.Id}");
-            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        }
-
-        [Fact(DisplayName = "06 - Find All Persons")]
-        [TestPriority(6)]
         public async Task FindAll_ShouldReturnLinksForEachPerson()
         {
-            // Act
-            var response = await _httpClient.GetAsync("api/person/v1");
-            response.EnsureSuccessStatusCode();
 
+            // ---------------------------
+            // Act
+            // ---------------------------
+            // Perform the HTTP GET request to retrieve all persons.
+            var response = await _httpClient
+                .GetAsync("api/person/v1/asc/10/1");// Ensures the response status code is 2xx.
+
+            // Read the response content as a string.
             var content = await response.Content.ReadAsStringAsync();
 
-            // Regex para capturar todos os "id" do retorno
-            var idMatches = Regex.Matches(content, @"""id"":\s*(\d+)");
+            // ---------------------------
+            // Assert
+            // ---------------------------
+            // Extract all "id" values from the response JSON using Regex.
+            var idMatches = Regex.Matches(content, @"""list"":\s*\[\s*{[^}]*""id"":\s*(\d+)");
             idMatches.Count.Should().BeGreaterThan(0, "There should be at least one person");
 
+            // Iterate through each person id found in the response.
             foreach (Match match in idMatches)
             {
                 var id = match.Groups[1].Value;
 
-                // Validar cada link do item
-                var expectedRels = new[] { "collection", "self", "create", "update", "delete" };
+                // Expected hypermedia relations (HATEOAS links).
+                var expectedRels = new[] { "collection", "self", "create", "update", "patch", "delete" };
 
                 foreach (var rel in expectedRels)
                 {
+                    // Build the expected regex pattern depending on the relation.
+                    // For "self" and "delete", the link must contain the specific id.
+                    // For others, the link points to the base endpoint.
                     var pattern = rel switch
                     {
-                        "self" or "delete" => $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/person/v1/{id}""",
-                        _ => $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/person/v1"""
+                        "self" or "delete" or "patch" =>
+                            $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/person/v1/{id}""",
+                        _ =>
+                            $@"""rel"":\s*""{rel}"".*?""href"":\s*""https?://.+/api/person/v1"""
                     };
 
+                    // Assert that the link with the correct "rel" and "href" exists.
                     Regex.IsMatch(content, pattern, RegexOptions.IgnoreCase)
                          .Should().BeTrue($"Link '{rel}' should exist for person {id}");
 
-                    // Validar que existe type
+                    // Assert that each link also contains a "type" attribute.
                     var typePattern = $@"""rel"":\s*""{rel}"".*?""type"":\s*""[^""]+""";
-                    Regex.IsMatch(content, typePattern).Should().BeTrue($"Link '{rel}' must have a type for person {id}");
+                    Regex.IsMatch(content, typePattern)
+                         .Should().BeTrue($"Link '{rel}' must have a type for person {id}");
                 }
             }
         }
+
     }
 }

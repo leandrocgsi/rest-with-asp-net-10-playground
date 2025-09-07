@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestWithASPNET10Erudio.Model.Base;
 using RestWithASPNET10Erudio.Model.Context;
-using System.Data;
 
 namespace RestWithASPNET10Erudio.Repositories.Impl
 {
@@ -58,7 +57,8 @@ namespace RestWithASPNET10Erudio.Repositories.Impl
 
         public List<T> FindWithPagedSearch(string query)
         {
-            return _dataset.FromSqlRaw(query).ToList();
+            //return _dataset.FromSqlRaw(query).ToList();
+            return [.. _dataset.FromSqlRaw(query)];
         }
 
         public int GetCount(string query)
@@ -72,6 +72,5 @@ namespace RestWithASPNET10Erudio.Repositories.Impl
             var result = command.ExecuteScalar();
             return Convert.ToInt32(result);
         }
-
     }
 }

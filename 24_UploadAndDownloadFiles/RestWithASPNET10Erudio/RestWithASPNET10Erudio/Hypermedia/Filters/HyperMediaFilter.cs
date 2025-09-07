@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace RestWithASPNET10Erudio.Hypermedia.Filters
 {
-    public class HyperMediaFilter(
-      HyperMediaFilterOptions hyperMediaFilterOptions) : ResultFilterAttribute
+    public class HypermediaFilter(
+        HypermediaFilterOptions hypermediaFilterOptions)
+        : ResultFilterAttribute
     {
-        private readonly HyperMediaFilterOptions _hyperMediaFilterOptions = hyperMediaFilterOptions;
+        private readonly HypermediaFilterOptions _hypermediaFilterOptions = hypermediaFilterOptions;
 
-        public override void OnResultExecuting(ResultExecutingContext context)
+        public override void OnResultExecuting(
+            ResultExecutingContext context)
         {
             TryEnrichResult(context);
             base.OnResultExecuting(context);
@@ -18,14 +20,11 @@ namespace RestWithASPNET10Erudio.Hypermedia.Filters
         {
             if (context.Result is OkObjectResult objectResult)
             {
-
-                var enricher = _hyperMediaFilterOptions
-                  .ContentResponseEnricherList
-                  .FirstOrDefault(option => option.CanEnrich(context));
-
+                var enricher = _hypermediaFilterOptions
+                    .ContentResponseEnricherList
+                    .FirstOrDefault(option => option.CanEnrich(context));
                 enricher?.Enrich(context).Wait();
             }
         }
     }
-
 }
