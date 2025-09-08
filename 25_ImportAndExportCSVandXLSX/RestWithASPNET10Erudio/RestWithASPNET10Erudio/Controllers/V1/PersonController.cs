@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
+using RestWithASPNET10Erudio.Exporters.Factory;
 using RestWithASPNET10Erudio.Hypermedia.Utils;
 using RestWithASPNET10Erudio.Services;
 
@@ -131,6 +132,75 @@ namespace RestWithASPNET10Erudio.Controllers.V1
             }
             _logger.LogDebug("Person with ID {id} disabled successfully", id);
             return Ok(disabledPerson);
+        }
+
+        [HttpPost("massCreation")]
+        [ProducesResponseType(typeof(List<PersonDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        public async Task<IActionResult> MassCreation([FromForm] FileUploadDTO input)
+        {
+            var file = input.File;
+
+            if (file == null || file.Length == 0)
+            {
+                _logger.LogWarning("No file provided for mass creation.");
+                return BadRequest("File is required.");
+            }
+
+            _logger.LogInformation("Processing file import: {FileName}", file.FileName);
+
+            var result = await _personService.MassCreationAsync(file);
+
+            if (result == null || result.Count == 0)
+            {
+                _logger.LogWarning("No records were imported from file {FileName}", file.FileName);
+                return NoContent();
+            }
+
+            _logger.LogInformation("Successfully imported {Count} people from {FileName}", result.Count, file.FileName);
+
+            return Ok(result);
+        }
+
+        [HttpGet("exportPage")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(415)]
+        [Produces(
+            MediaTypes.ApplicationCsv,
+            MediaTypes.ApplicationXlsx)
+        ]
+
+        public IActionResult Export(
+            [FromQuery] int page = 0,
+            [FromQuery] int size = 10,
+            [FromQuery] string direction = "asc")
+        {
+            var acceptHeader = Request.Headers.Accept.ToString();
+
+            if (string.IsNullOrWhiteSpace(acceptHeader))
+            {
+                return BadRequest("The 'Accept' header is required (use 'text/csv' or 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').");
+            }
+
+            try
+            {
+                var fileResult = _personService.ExportPage(page, size, direction, acceptHeader);
+                _logger.LogInformation("Successfully exported page {Page} with size {Size} in {Direction} order", page, size, direction);
+                return fileResult;
+            }
+            catch (NotSupportedException ex)
+            {
+                _logger.LogWarning(ex, "Unsupported export format requested: {AcceptHeader}", acceptHeader);
+                return StatusCode(StatusCodes.Status415UnsupportedMediaType, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while exporting data");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error while exporting data");
+            }
         }
     }
 }

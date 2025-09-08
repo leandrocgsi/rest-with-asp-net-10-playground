@@ -1,4 +1,6 @@
 using RestWithASPNET10Erudio.Configurations;
+using RestWithASPNET10Erudio.Exporters.Factory;
+using RestWithASPNET10Erudio.Exporters.Impl;
 using RestWithASPNET10Erudio.Hypermedia.Filters;
 using RestWithASPNET10Erudio.Importers.Factory;
 using RestWithASPNET10Erudio.Importers.Impl;
@@ -14,6 +16,7 @@ builder.AddSerilogLogging();
 builder.Services.AddControllers(options =>
     {
         options.Filters.Add<HypermediaFilter>();
+        options.ReturnHttpNotAcceptable = false;
     })
     .AddContentNegotiation();
 
@@ -36,6 +39,10 @@ builder.Services.AddScoped<PersonServicesImplV2>();
 builder.Services.AddScoped<CsvImporter>();
 builder.Services.AddScoped<XlsxImporter>();
 builder.Services.AddScoped<FileImporterFactory>();
+
+builder.Services.AddScoped<CsvExporter>();
+builder.Services.AddScoped<XlsxExporter>();
+builder.Services.AddScoped<FileExporterFactory>();
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); 
 builder.Services.AddScoped<IFileServices, FileServicesImpl>();
