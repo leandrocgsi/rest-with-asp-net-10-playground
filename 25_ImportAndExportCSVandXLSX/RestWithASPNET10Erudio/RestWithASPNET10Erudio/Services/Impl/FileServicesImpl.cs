@@ -1,4 +1,6 @@
-﻿using RestWithASPNET10Erudio.Data.DTO.V1;
+﻿using System.IO;
+
+using RestWithASPNET10Erudio.Data.DTO.V1;
 
 namespace RestWithASPNET10Erudio.Services.Impl
 {
@@ -24,8 +26,8 @@ namespace RestWithASPNET10Erudio.Services.Impl
         public byte[] GetFile(string fileName)
         {
             var filePath = Path.Combine(_basePath, fileName);
-            if (!File.Exists(filePath)) return null;
-            return File.ReadAllBytes(filePath);
+            if (!System.IO.File.Exists(filePath)) return null;
+            return System.IO.File.ReadAllBytes(filePath);
         }
 
         public async Task<FileDetailDTO> SaveFileToDisk(IFormFile file)

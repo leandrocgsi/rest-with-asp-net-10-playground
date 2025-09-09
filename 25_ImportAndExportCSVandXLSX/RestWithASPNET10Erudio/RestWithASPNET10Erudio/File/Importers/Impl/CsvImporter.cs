@@ -1,10 +1,10 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using RestWithASPNET10Erudio.Data.DTO.V1;
-using RestWithASPNET10Erudio.Importers.Contract;
+using RestWithASPNET10Erudio.File.Importers.Contract;
 using System.Globalization;
 
-namespace RestWithASPNET10Erudio.Importers.Impl
+namespace RestWithASPNET10Erudio.File.Importers.Impl
 {
     public class CsvImporter : IFileImporter
     {

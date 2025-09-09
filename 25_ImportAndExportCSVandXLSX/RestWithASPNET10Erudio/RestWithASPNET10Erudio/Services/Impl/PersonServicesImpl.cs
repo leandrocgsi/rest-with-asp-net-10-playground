@@ -3,9 +3,9 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
-using RestWithASPNET10Erudio.Exporters.Factory;
+using RestWithASPNET10Erudio.File.Exporters.Factory;
+using RestWithASPNET10Erudio.File.Importers.Factory;
 using RestWithASPNET10Erudio.Hypermedia.Utils;
-using RestWithASPNET10Erudio.Importers.Factory;
 using RestWithASPNET10Erudio.Model;
 using RestWithASPNET10Erudio.Repositories;
 
@@ -116,11 +116,12 @@ namespace RestWithASPNET10Erudio.Services.Impl
             int page,
             int pageSize,
             string sortDirection,
-            string acceptHeader)
+            string acceptHeader,
+            string name)
         {
             _logger.LogInformation("Exporting People page {Page}, size {Size}, direction {Direction}", page, pageSize, sortDirection);
 
-            var content = _repository.FindWithPagedSearch("", sortDirection, pageSize, page);
+            var content = _repository.FindWithPagedSearch(name, sortDirection, pageSize, page);
             try
             {
                 var exporter = _exporterFactory.GetExporter(acceptHeader);

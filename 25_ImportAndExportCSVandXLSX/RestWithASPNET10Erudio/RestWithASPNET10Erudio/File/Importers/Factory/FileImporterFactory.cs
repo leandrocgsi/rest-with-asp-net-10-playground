@@ -1,7 +1,7 @@
-﻿using RestWithASPNET10Erudio.Importers.Contract;
-using RestWithASPNET10Erudio.Importers.Impl;
+﻿using RestWithASPNET10Erudio.File.Importers.Contract;
+using RestWithASPNET10Erudio.File.Importers.Impl;
 
-namespace RestWithASPNET10Erudio.Importers.Factory
+namespace RestWithASPNET10Erudio.File.Importers.Factory
 {
     public class FileImporterFactory(
         IServiceProvider serviceProvider,

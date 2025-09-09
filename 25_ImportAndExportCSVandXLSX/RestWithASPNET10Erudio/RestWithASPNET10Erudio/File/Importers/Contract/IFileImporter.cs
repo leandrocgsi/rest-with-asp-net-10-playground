@@ -1,6 +1,6 @@
 ﻿using RestWithASPNET10Erudio.Data.DTO.V1;
 
-namespace RestWithASPNET10Erudio.Importers.Contract
+namespace RestWithASPNET10Erudio.File.Importers.Contract
 {
     public interface IFileImporter
     {

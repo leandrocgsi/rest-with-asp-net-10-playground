@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
-using RestWithASPNET10Erudio.Exporters.Factory;
+using RestWithASPNET10Erudio.File.Exporters.Factory;
 using RestWithASPNET10Erudio.Hypermedia.Utils;
 using RestWithASPNET10Erudio.Services;
 
@@ -163,7 +163,7 @@ namespace RestWithASPNET10Erudio.Controllers.V1
             return Ok(result);
         }
 
-        [HttpGet("exportPage")]
+        [HttpGet("exportPage/{sortDirection}/{pageSize}/{page}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -174,9 +174,10 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         ]
 
         public IActionResult Export(
-            [FromQuery] int page = 0,
-            [FromQuery] int size = 10,
-            [FromQuery] string direction = "asc")
+            string sortDirection,
+            int pageSize,
+            int page,
+            [FromQuery] string name = "")
         {
             var acceptHeader = Request.Headers.Accept.ToString();
 
@@ -187,8 +188,9 @@ namespace RestWithASPNET10Erudio.Controllers.V1
 
             try
             {
-                var fileResult = _personService.ExportPage(page, size, direction, acceptHeader);
-                _logger.LogInformation("Successfully exported page {Page} with size {Size} in {Direction} order", page, size, direction);
+                var fileResult = _personService.ExportPage(
+                    page, pageSize, sortDirection, acceptHeader, name);
+                _logger.LogInformation("Successfully exported page {Page} with size {Size} in {Direction} order", page, pageSize, sortDirection);
                 return fileResult;
             }
             catch (NotSupportedException ex)

@@ -1,10 +1,10 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
-using RestWithASPNET10Erudio.Exporters.Contract;
-using RestWithASPNET10Erudio.Exporters.Factory;
+using RestWithASPNET10Erudio.File.Exporters.Contract;
+using RestWithASPNET10Erudio.File.Exporters.Factory;
 
-namespace RestWithASPNET10Erudio.Exporters.Impl
+namespace RestWithASPNET10Erudio.File.Exporters.Impl
 {
     public class XlsxExporter : IFileExporter
     {

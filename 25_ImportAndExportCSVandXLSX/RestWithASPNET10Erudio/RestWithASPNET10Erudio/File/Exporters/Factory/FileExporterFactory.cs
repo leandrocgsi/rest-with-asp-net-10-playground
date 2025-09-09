@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using RestWithASPNET10Erudio.Exporters.Contract;
-using RestWithASPNET10Erudio.Exporters.Impl;
-using RestWithASPNET10Erudio.Importers.Impl;
+﻿using RestWithASPNET10Erudio.File.Exporters.Contract;
+using RestWithASPNET10Erudio.File.Exporters.Impl;
 
-namespace RestWithASPNET10Erudio.Exporters.Factory
+namespace RestWithASPNET10Erudio.File.Exporters.Factory
 {
     public class FileExporterFactory
     {
