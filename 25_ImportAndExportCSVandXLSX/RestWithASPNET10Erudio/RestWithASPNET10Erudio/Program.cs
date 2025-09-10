@@ -1,8 +1,8 @@
 using RestWithASPNET10Erudio.Configurations;
-using RestWithASPNET10Erudio.File.Exporters.Factory;
-using RestWithASPNET10Erudio.File.Exporters.Impl;
-using RestWithASPNET10Erudio.File.Importers.Factory;
-using RestWithASPNET10Erudio.File.Importers.Impl;
+using RestWithASPNET10Erudio.Files.Exporters.Factory;
+using RestWithASPNET10Erudio.Files.Exporters.Impl;
+using RestWithASPNET10Erudio.Files.Importers.Factory;
+using RestWithASPNET10Erudio.Files.Importers.Impl;
 using RestWithASPNET10Erudio.Hypermedia.Filters;
 using RestWithASPNET10Erudio.Repositories;
 using RestWithASPNET10Erudio.Repositories.Impl;
@@ -16,7 +16,6 @@ builder.AddSerilogLogging();
 builder.Services.AddControllers(options =>
     {
         options.Filters.Add<HypermediaFilter>();
-        options.ReturnHttpNotAcceptable = false;
     })
     .AddContentNegotiation();
 

@@ -1,4 +1,4 @@
-﻿namespace RestWithASPNET10Erudio.File.Exporters.Factory
+﻿namespace RestWithASPNET10Erudio.Files.Importers.Factory
 {
     public static class MediaTypes
     {

@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
-using RestWithASPNET10Erudio.File.Exporters.Factory;
+using RestWithASPNET10Erudio.Files.Importers.Factory;
 using RestWithASPNET10Erudio.Hypermedia.Utils;
 using RestWithASPNET10Erudio.Services;
 
@@ -135,73 +136,82 @@ namespace RestWithASPNET10Erudio.Controllers.V1
         }
 
         [HttpPost("massCreation")]
-        [ProducesResponseType(typeof(List<PersonDTO>), 200)]
+        [ProducesResponseType(200, Type = typeof(List<PersonDTO>))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
-        public async Task<IActionResult> MassCreation([FromForm] FileUploadDTO input)
+        public async Task<IActionResult> MassCreation(
+            [FromForm] FileUploadDTO input)
         {
-            var file = input.File;
-
-            if (file == null || file.Length == 0)
+            if (input.File == null || input.File.Length == 0)
             {
-                _logger.LogWarning("No file provided for mass creation.");
-                return BadRequest("File is required.");
+                _logger.LogWarning("No file uploaded for mass creation");
+                return BadRequest("File is Required!");
             }
+            _logger.LogInformation("Starting mass creation from uploaded file: {fileName}", input.File.FileName);
 
-            _logger.LogInformation("Processing file import: {FileName}", file.FileName);
+            var people = await _personService.MassCreationAsync(input.File);
 
-            var result = await _personService.MassCreationAsync(file);
-
-            if (result == null || result.Count == 0)
+            if (people == null)
             {
-                _logger.LogWarning("No records were imported from file {FileName}", file.FileName);
+                _logger.LogError("Mass creation failed for file: {fileName}", input.File.FileName);
                 return NoContent();
             }
-
-            _logger.LogInformation("Successfully imported {Count} people from {FileName}", result.Count, file.FileName);
-
-            return Ok(result);
+            _logger.LogInformation("Mass creation completed successfully with {count} records", people.Count);
+            return Ok(people);
         }
 
         [HttpGet("exportPage/{sortDirection}/{pageSize}/{page}")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(200, Type = typeof(FileContentResult))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [ProducesResponseType(415)]
         [Produces(
-            MediaTypes.ApplicationCsv,
-            MediaTypes.ApplicationXlsx)
-        ]
-
-        public IActionResult Export(
+            MediaTypes.ApplicationXlsx,
+            MediaTypes.ApplicationCsv
+        )]
+        public IActionResult ExportPage(
             string sortDirection,
             int pageSize,
             int page,
-            [FromQuery] string name = "")
+            [FromQuery] string name = ""
+        )
         {
-            var acceptHeader = Request.Headers.Accept.ToString();
-
+            var acceptHeader = Request.Headers["Accept"].ToString();
             if (string.IsNullOrWhiteSpace(acceptHeader))
             {
-                return BadRequest("The 'Accept' header is required (use 'text/csv' or 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').");
+                return BadRequest("Accept header is required");
             }
+
+            _logger.LogInformation(
+                "Exporting persons with paged search: {name}, {sortDirection}, {pageSize}, {page}, {acceptHeader}",
+                name, sortDirection, pageSize, page, acceptHeader);
 
             try
             {
                 var fileResult = _personService.ExportPage(
-                    page, pageSize, sortDirection, acceptHeader, name);
-                _logger.LogInformation("Successfully exported page {Page} with size {Size} in {Direction} order", page, pageSize, sortDirection);
+                    page,
+                    pageSize,
+                    sortDirection,
+                    acceptHeader,
+                    name);
+
                 return fileResult;
             }
             catch (NotSupportedException ex)
             {
-                _logger.LogWarning(ex, "Unsupported export format requested: {AcceptHeader}", acceptHeader);
-                return StatusCode(StatusCodes.Status415UnsupportedMediaType, ex.Message);
+                _logger.LogWarning(ex, "Unsupported export format " +
+                    "requested: {AcceptHeader}", acceptHeader);
+                return StatusCode(
+                    StatusCodes.Status415UnsupportedMediaType, ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error while exporting data");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error while exporting data");
+                _logger.LogError(ex, "Unexpected error " +
+                    "while exporting data");
+
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    "Internal Server Error");
             }
         }
     }

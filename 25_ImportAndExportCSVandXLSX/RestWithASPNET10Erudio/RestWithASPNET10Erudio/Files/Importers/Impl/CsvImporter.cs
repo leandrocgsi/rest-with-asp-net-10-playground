@@ -1,12 +1,12 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using RestWithASPNET10Erudio.Data.DTO.V1;
-using RestWithASPNET10Erudio.File.Importers.Contract;
+using RestWithASPNET10Erudio.Files.Importers.Contract;
 using System.Globalization;
 
-namespace RestWithASPNET10Erudio.File.Importers.Impl
+namespace RestWithASPNET10Erudio.Files.Importers.Impl
 {
-    public class CsvImporter : IFileImporter
+    internal class CsvImporter : IFileImporter
     {
         public async Task<List<PersonDTO>> ImportFileAsync(Stream fileStream)
         {
@@ -15,10 +15,10 @@ namespace RestWithASPNET10Erudio.File.Importers.Impl
             {
                 HasHeaderRecord = true,
                 TrimOptions = TrimOptions.Trim,
-                IgnoreBlankLines = true
+                IgnoreBlankLines = true,
             });
 
-            var persons = new List<PersonDTO>();
+            var people = new List<PersonDTO>();
 
             await foreach (var record in csv.GetRecordsAsync<dynamic>())
             {
@@ -30,11 +30,9 @@ namespace RestWithASPNET10Erudio.File.Importers.Impl
                     Gender = record.gender,
                     Enabled = true
                 };
-
-                persons.Add(person);
+                people.Add(person);
             }
-
-            return persons;
+            return people;
         }
     }
 }

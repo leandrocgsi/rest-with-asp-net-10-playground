@@ -1,20 +1,20 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
-using RestWithASPNET10Erudio.File.Exporters.Contract;
-using RestWithASPNET10Erudio.File.Exporters.Factory;
+using RestWithASPNET10Erudio.Files.Exporters.Contract;
+using RestWithASPNET10Erudio.Files.Importers.Factory;
 
-namespace RestWithASPNET10Erudio.File.Exporters.Impl
+namespace RestWithASPNET10Erudio.Files.Exporters.Impl
 {
-    public class XlsxExporter : IFileExporter
+    internal class XlsxExporter : IFileExporter
     {
         public FileContentResult ExportFile(List<PersonDTO> people)
         {
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("People");
 
-            // Cabeçalho
-            worksheet.Cell(1, 1).Value = "ID";
+            // Adding Headers
+            worksheet.Cell(1, 1).Value = "Id";
             worksheet.Cell(1, 2).Value = "First Name";
             worksheet.Cell(1, 3).Value = "Last Name";
             worksheet.Cell(1, 4).Value = "Address";
@@ -23,9 +23,9 @@ namespace RestWithASPNET10Erudio.File.Exporters.Impl
 
             var headerRange = worksheet.Range(1, 1, 1, 6);
             headerRange.Style.Font.Bold = true;
-            headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            headerRange.Style.Alignment.Horizontal
+                = XLAlignmentHorizontalValues.Center;
 
-            // Preenche os dados
             int row = 2;
             foreach (var person in people)
             {
@@ -34,18 +34,21 @@ namespace RestWithASPNET10Erudio.File.Exporters.Impl
                 worksheet.Cell(row, 3).Value = person.LastName;
                 worksheet.Cell(row, 4).Value = person.Address;
                 worksheet.Cell(row, 5).Value = person.Gender;
-                worksheet.Cell(row, 6).Value = person.Enabled == true ? "Yes" : "No";
+                worksheet.Cell(row, 6).Value = person.Enabled
+                    == true ? "Yes" : "No";
+
                 row++;
             }
 
-            // Ajusta colunas automaticamente
             worksheet.Columns().AdjustToContents();
 
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
+
             var fileBytes = stream.ToArray();
 
-            return new FileContentResult(fileBytes, MediaTypes.ApplicationXlsx)
+            return new FileContentResult(fileBytes,
+                MediaTypes.ApplicationXlsx)
             {
                 FileDownloadName = $"people_exported_{DateTime.UtcNow:yyyyMMddHHmmss}.xlsx"
             };
