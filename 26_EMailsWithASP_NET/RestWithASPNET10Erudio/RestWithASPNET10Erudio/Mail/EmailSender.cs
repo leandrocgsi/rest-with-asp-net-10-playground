@@ -68,7 +68,8 @@ namespace RestWithASPNET10Erudio.Mail
 
             if (!string.IsNullOrEmpty(_attachment))
             {
-                builder.Attachments.Add(_attachment);
+                var fileName = Path.GetFileName(_attachment); // preserva extensão original
+                builder.Attachments.Add(fileName, File.ReadAllBytes(_attachment)); // LINHA ALTERADA AQUI
             }
 
             message.Body = builder.ToMessageBody();

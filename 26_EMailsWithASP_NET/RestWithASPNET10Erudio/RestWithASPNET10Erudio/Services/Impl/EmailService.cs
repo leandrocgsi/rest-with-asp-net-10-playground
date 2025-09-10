@@ -36,7 +36,7 @@ namespace RestWithASPNET10Erudio.Services.Impl
                 throw new ArgumentException("Attachment is missing.");
             }
 
-            string tempFilePath = Path.GetTempFileName();
+            string tempFilePath = Path.Combine(Path.GetTempPath(), attachment.FileName);
 
             try
             {
