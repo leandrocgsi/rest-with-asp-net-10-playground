@@ -9,6 +9,8 @@ using RestWithASPNET10Erudio.Repositories;
 using RestWithASPNET10Erudio.Repositories.Impl;
 using RestWithASPNET10Erudio.Services;
 using RestWithASPNET10Erudio.Services.Impl;
+using RestWithASPNETErudio.Repository;
+using RestWithASPNETErudio.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,15 @@ builder.Services.AddHATEOASConfiguration();
 builder.Services.AddEmailConfiguration(builder.Configuration);
 builder.Services.AddDatabaseConfiguration(builder.Configuration);
 builder.Services.AddEvolveConfiguration(builder.Configuration, builder.Environment);
+
+// Autenticação e Autorização
+builder.Services.AddAuthConfiguration(builder.Configuration);
+
+
+// Dependency Injection
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ILoginService, LoginServiceImpl>();
+builder.Services.AddTransient<ITokenService, TokenServiceImpl>();
 
 builder.Services.AddScoped<IPersonServices, PersonServicesImpl>();
 builder.Services.AddScoped<IBookServices, BookServicesImpl>();
@@ -60,6 +71,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 
 app.UseAuthorization();
 app.UseRouting();
