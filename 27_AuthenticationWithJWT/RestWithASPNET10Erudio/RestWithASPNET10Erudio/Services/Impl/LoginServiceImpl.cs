@@ -1,5 +1,7 @@
 ﻿using Microsoft.IdentityModel.JsonWebTokens;
 using RestWithASPNET10Erudio.Auth;
+using RestWithASPNET10Erudio.Data.DTO.V1;
+using RestWithASPNET10Erudio.Model;
 using RestWithASPNETErudio.Data.DTO;
 using RestWithASPNETErudio.Repository;
 using RestWithASPNETErudio.Services;
@@ -88,6 +90,27 @@ namespace RestWithASPNET10Erudio.Services.Impl
         public bool RevokeToken(string username)
         {
             return _repository.RevokeToken(username);
+        }
+
+        public AccountCredentialsDTO Create(AccountCredentialsDTO dto)
+        {
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
+            var entity = new User
+            {
+                UserName = dto.Username,
+                FullName = dto.FullName,
+                Password = dto.Password // será hasheada no repo
+            };
+
+            var userCreated = _repository.Create(entity);
+
+            return new AccountCredentialsDTO
+            {
+                Username = userCreated.UserName,
+                FullName = userCreated.FullName,
+                Password = "*****************" // nunca retorna senha!
+            };
         }
     }
 }

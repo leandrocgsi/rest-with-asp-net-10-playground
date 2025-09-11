@@ -8,5 +8,6 @@ namespace RestWithASPNETErudio.Repository
         User? ValidateCredentials(string username);
         User? RefreshUserInfo(User user);
         bool RevokeToken(string username);
+        User Create(User user);
     }
 }

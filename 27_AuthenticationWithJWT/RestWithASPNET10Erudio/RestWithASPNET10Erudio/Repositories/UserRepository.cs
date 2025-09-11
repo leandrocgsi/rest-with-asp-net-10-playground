@@ -6,21 +6,16 @@ using System.Text;
 
 namespace RestWithASPNET10Erudio.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository(MSSQLContext context) : IUserRepository
     {
-        private readonly MSSQLContext _context;
-
-        public UserRepository(MSSQLContext context)
-        {
-            _context = context;
-        }
+        private readonly MSSQLContext _context = context;
 
         public User ValidateCredentials(string username, string password)
         {
-            var pass = ComputeHash(password, SHA256.Create());
+            var hashedPassword = HashPassword(password); // using centralized hash method
             return _context.Users.FirstOrDefault(u =>
                 u.UserName == username &&
-                u.Password == pass);
+                u.Password == hashedPassword);
         }
 
         public User ValidateCredentials(string username)
@@ -59,15 +54,33 @@ namespace RestWithASPNET10Erudio.Repositories
             return true;
         }
 
-        private string ComputeHash(string input, HashAlgorithm algorithm)
+        public User Create(User user)
         {
-            byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+            // Use centralized hash method
+            user.Password = HashPassword(user.Password);
+
+            // Initialize refresh token related fields
+            user.RefreshToken = string.Empty;
+            user.RefreshTokenExpiryTime = null;
+
+            // Persist the new user
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            return user;
+        }
+
+        // Centralized method for hashing passwords
+        public string HashPassword(string password)
+        {
+            using var algorithm = SHA256.Create();
+            byte[] inputBytes = Encoding.UTF8.GetBytes(password);
             byte[] hashedBytes = algorithm.ComputeHash(inputBytes);
 
             var builder = new StringBuilder();
-            foreach (var item in hashedBytes)
+            foreach (var b in hashedBytes)
             {
-                builder.Append(item.ToString("x2"));
+                builder.Append(b.ToString("x2"));
             }
 
             return builder.ToString();

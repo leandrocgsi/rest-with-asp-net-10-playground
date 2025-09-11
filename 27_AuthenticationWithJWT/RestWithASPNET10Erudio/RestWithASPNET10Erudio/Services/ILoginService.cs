@@ -1,4 +1,5 @@
-﻿using RestWithASPNETErudio.Data.DTO;
+﻿using RestWithASPNET10Erudio.Data.DTO.V1;
+using RestWithASPNETErudio.Data.DTO;
 
 namespace RestWithASPNETErudio.Services
 {
@@ -7,5 +8,6 @@ namespace RestWithASPNETErudio.Services
         TokenDTO? ValidateCredentials(UserDTO user);
         TokenDTO? ValidateCredentials(TokenDTO token);
         bool RevokeToken(string username);
+        AccountCredentialsDTO Create(AccountCredentialsDTO user);
     }
 }
