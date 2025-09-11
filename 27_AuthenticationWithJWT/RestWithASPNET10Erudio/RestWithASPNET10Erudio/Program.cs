@@ -9,7 +9,6 @@ using RestWithASPNET10Erudio.Repositories;
 using RestWithASPNET10Erudio.Repositories.Impl;
 using RestWithASPNET10Erudio.Services;
 using RestWithASPNET10Erudio.Services.Impl;
-using RestWithASPNETErudio.Repository;
 using RestWithASPNETErudio.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,11 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddSerilogLogging();
 
 builder.Services.AddControllers(options =>
-    {
-        options.Filters.Add<HypermediaFilter>();
-    })
-    .AddContentNegotiation();
-
+{
+    options.Filters.Add<HypermediaFilter>();
+})
+.AddContentNegotiation();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenAPIConfig();
@@ -38,12 +36,14 @@ builder.Services.AddEvolveConfiguration(builder.Configuration, builder.Environme
 // Autenticação e Autorização
 builder.Services.AddAuthConfiguration(builder.Configuration);
 
-
 // Dependency Injection
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ILoginService, LoginServiceImpl>();
-builder.Services.AddTransient<ITokenService, TokenServiceImpl>();
 
+// REPOSITÓRIOS
+builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+// SERVIÇOS
 builder.Services.AddScoped<IPersonServices, PersonServicesImpl>();
 builder.Services.AddScoped<IBookServices, BookServicesImpl>();
 builder.Services.AddScoped<PersonServicesImplV2>();
@@ -59,17 +59,22 @@ builder.Services.AddScoped<CsvExporter>();
 builder.Services.AddScoped<XlsxExporter>();
 builder.Services.AddScoped<FileExporterFactory>();
 
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); 
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IFileServices, FileServicesImpl>();
 
-builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+// AUTENTICAÇÃO - LINHAS REMOVIDAS
+// builder.Services.AddScoped<ILoginService, LoginServiceImpl>(); // REMOVIDO
+// builder.Services.AddTransient<ITokenService, TokenServiceImpl>(); // REMOVIDO
 
-builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+// ADICIONADAS
+builder.Services.AddScoped<IPasswordHasher, Sha256PasswordHasher>(); // ADICIONADO
+builder.Services.AddScoped<IUserAuthService, UserAuthServiceImpl>(); // ADICIONADO
+builder.Services.AddScoped<ILoginService, LoginServiceImpl>(); // ADICIONADO
+builder.Services.AddScoped<ITokenService, TokenServiceImpl>(); // ADICIONADO
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-
 app.UseHttpsRedirection();
 
 app.UseRouting();

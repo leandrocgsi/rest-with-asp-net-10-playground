@@ -1,13 +1,9 @@
 ﻿using RestWithASPNET10Erudio.Model;
 
-namespace RestWithASPNETErudio.Repository
+namespace RestWithASPNET10Erudio.Repositories
 {
-    public interface IUserRepository
+    public interface IUserRepository : IRepository<User>
     {
-        User? ValidateCredentials(string username, string password);
-        User? ValidateCredentials(string username);
-        User? RefreshUserInfo(User user);
-        bool RevokeToken(string username);
-        User Create(User user);
+        User? GetByUsername(string username);
     }
 }

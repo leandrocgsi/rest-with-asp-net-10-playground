@@ -1,14 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using RestWithASPNET10Erudio.Model.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RestWithASPNET10Erudio.Model
 {
     [Table("users")]
-    public class User
+    public class User : BaseEntity
     {
-        [Key]
-        [Column("id")]
-        public long Id { get; set; }
 
         [Column("user_name")]
         public string UserName { get; set; } = string.Empty;

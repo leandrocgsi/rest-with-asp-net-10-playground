@@ -3,7 +3,6 @@ using RestWithASPNET10Erudio.Auth;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Model;
 using RestWithASPNETErudio.Data.DTO;
-using RestWithASPNETErudio.Repository;
 using RestWithASPNETErudio.Services;
 using System.Security.Claims;
 
@@ -14,22 +13,67 @@ namespace RestWithASPNET10Erudio.Services.Impl
         private const string DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
         private readonly TokenConfiguration _configurations;
-        private readonly IUserRepository _repository;
         private readonly ITokenService _tokenService;
+        private readonly IUserAuthService _userAuthService;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public LoginServiceImpl(IUserRepository repository, ITokenService tokenService, TokenConfiguration configurations)
+        public LoginServiceImpl(
+            TokenConfiguration configurations,
+            ITokenService tokenService,
+            IUserAuthService userAuthService,
+            IPasswordHasher passwordHasher)
         {
-            _repository = repository;
-            _tokenService = tokenService;
             _configurations = configurations;
+            _tokenService = tokenService;
+            _userAuthService = userAuthService;
+            _passwordHasher = passwordHasher;
         }
 
-        public TokenDTO ValidateCredentials(UserDTO userDto)
+        public TokenDTO? ValidateCredentials(UserDTO userDto)
         {
-            var user = _repository.ValidateCredentials(userDto.Username, userDto.Password);
+            var user = _userAuthService.GetByUsername(userDto.Username);
             if (user == null) return null;
 
-            var claims = new List<Claim>
+            if (!_passwordHasher.Verify(userDto.Password, user.Password))
+                return null;
+
+            return GenerateTokens(user);
+        }
+
+        public TokenDTO? ValidateCredentials(TokenDTO token)
+        {
+            var principal = _tokenService.GetPrincipalFromExpiredToken(token.AccessToken);
+            var username = principal.Identity?.Name;
+
+            var user = _userAuthService.GetByUsername(username);
+            if (user == null ||
+                user.RefreshToken != token.RefreshToken ||
+                user.RefreshTokenExpiryTime <= DateTime.Now)
+                return null;
+
+            return GenerateTokens(user, principal.Claims);
+        }
+
+        public bool RevokeToken(string username)
+        {
+            return _userAuthService.RevokeToken(username);
+        }
+
+        public AccountCredentialsDTO Create(AccountCredentialsDTO dto)
+        {
+            var user = _userAuthService.Create(dto);
+
+            return new AccountCredentialsDTO
+            {
+                Username = user.UserName,
+                FullName = user.FullName,
+                Password = "*****************"
+            };
+        }
+
+        private TokenDTO GenerateTokens(User user, IEnumerable<Claim>? existingClaims = null)
+        {
+            var claims = existingClaims?.ToList() ?? new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName)
@@ -41,7 +85,7 @@ namespace RestWithASPNET10Erudio.Services.Impl
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.Now.AddDays(_configurations.DaysToExpiry);
 
-            _repository.RefreshUserInfo(user);
+            _userAuthService.Update(user);
 
             var createDate = DateTime.Now;
             var expirationDate = createDate.AddMinutes(_configurations.Minutes);
@@ -53,64 +97,6 @@ namespace RestWithASPNET10Erudio.Services.Impl
                 accessToken,
                 refreshToken
             );
-        }
-
-        public TokenDTO ValidateCredentials(TokenDTO token)
-        {
-            var accessToken = token.AccessToken;
-            var refreshToken = token.RefreshToken;
-
-            var principal = _tokenService.GetPrincipalFromExpiredToken(accessToken);
-            var username = principal.Identity?.Name;
-
-            var user = _repository.ValidateCredentials(username);
-
-            if (user == null ||
-                user.RefreshToken != refreshToken ||
-                user.RefreshTokenExpiryTime <= DateTime.Now) return null;
-
-            accessToken = _tokenService.GenerateAccessToken(principal.Claims);
-            refreshToken = _tokenService.GenerateRefreshToken();
-
-            user.RefreshToken = refreshToken;
-            _repository.RefreshUserInfo(user);
-
-            var createDate = DateTime.Now;
-            var expirationDate = createDate.AddMinutes(_configurations.Minutes);
-
-            return new TokenDTO(
-                true,
-                createDate.ToString(DATE_FORMAT),
-                expirationDate.ToString(DATE_FORMAT),
-                accessToken,
-                refreshToken
-            );
-        }
-
-        public bool RevokeToken(string username)
-        {
-            return _repository.RevokeToken(username);
-        }
-
-        public AccountCredentialsDTO Create(AccountCredentialsDTO dto)
-        {
-            if (dto == null) throw new ArgumentNullException(nameof(dto));
-
-            var entity = new User
-            {
-                UserName = dto.Username,
-                FullName = dto.FullName,
-                Password = dto.Password // será hasheada no repo
-            };
-
-            var userCreated = _repository.Create(entity);
-
-            return new AccountCredentialsDTO
-            {
-                Username = userCreated.UserName,
-                FullName = userCreated.FullName,
-                Password = "*****************" // nunca retorna senha!
-            };
         }
     }
 }

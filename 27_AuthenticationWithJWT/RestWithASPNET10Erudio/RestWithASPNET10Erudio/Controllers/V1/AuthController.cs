@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestWithASPNET10Erudio.Data.DTO.V1;
+using RestWithASPNET10Erudio.Services;
 using RestWithASPNETErudio.Data.DTO;
 using RestWithASPNETErudio.Services;
 
@@ -11,105 +12,59 @@ namespace RestWithASPNET10Erudio.Controllers.V1
     public class AuthController : ControllerBase
     {
         private readonly ILoginService _loginService;
-        private readonly ILogger<AuthController> _logger;
+        private readonly IUserAuthService _userAuthService;
 
-        public AuthController(ILoginService loginService, ILogger<AuthController> logger)
+        public AuthController(ILoginService loginService, IUserAuthService userAuthService)
         {
             _loginService = loginService;
-            _logger = logger;
+            _userAuthService = userAuthService;
         }
 
         [HttpPost("signin")]
         [AllowAnonymous]
-        [ProducesResponseType(200, Type = typeof(TokenDTO))]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(401)]
-        public IActionResult Login([FromBody] UserDTO userCredentials)
+        public IActionResult SignIn([FromBody] UserDTO user)
         {
-            _logger.LogInformation("Attempting to sign in user {username}", userCredentials?.Username);
+            if (user == null) return BadRequest("Invalid client request");
 
-            if (userCredentials == null ||
-                string.IsNullOrEmpty(userCredentials.Username) ||
-                string.IsNullOrEmpty(userCredentials.Password))
-            {
-                _logger.LogWarning("Invalid credentials provided");
-                return BadRequest("Username and password must be informed.");
-            }
+            var token = _loginService.ValidateCredentials(user);
+            if (token == null) return Unauthorized();
 
-            var token = _loginService.ValidateCredentials(userCredentials);
-
-            if (token == null)
-            {
-                _logger.LogWarning("Unauthorized login attempt for user {username}", userCredentials.Username);
-                return Unauthorized();
-            }
-
-            _logger.LogInformation("User {username} signed in successfully", userCredentials.Username);
             return Ok(token);
         }
 
         [HttpPost("refresh")]
-        [ProducesResponseType(200, Type = typeof(TokenDTO))]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(401)]
+        [AllowAnonymous]
         public IActionResult Refresh([FromBody] TokenDTO tokenDto)
         {
-            _logger.LogInformation("Attempting to refresh token");
-
-            if (tokenDto == null)
-            {
-                _logger.LogWarning("Invalid token provided for refresh");
-                return BadRequest("Invalid token.");
-            }
+            if (tokenDto == null) return BadRequest("Invalid client request");
 
             var token = _loginService.ValidateCredentials(tokenDto);
+            if (token == null) return Unauthorized();
 
-            if (token == null)
-            {
-                _logger.LogWarning("Unauthorized token refresh attempt");
-                return Unauthorized();
-            }
-
-            _logger.LogInformation("Token refreshed successfully");
             return Ok(token);
         }
 
-        [HttpPost("createUser")]
+        [HttpPost("create")]
         [AllowAnonymous]
-        [ProducesResponseType(200, Type = typeof(AccountCredentialsDTO))]
-        [ProducesResponseType(400)]
         public IActionResult Create([FromBody] AccountCredentialsDTO user)
         {
             if (user == null) return BadRequest("Invalid client request");
-            var createdUser = _loginService.Create(user);
-            return Ok(createdUser);
+
+            var result = _loginService.Create(user);
+            return Ok(result);
         }
 
-
-        [HttpGet("revoke")]
-        [Authorize("Bearer")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(401)]
+        [HttpPost("revoke")]
+        [Authorize]
         public IActionResult Revoke()
         {
-            var username = User?.Identity?.Name;
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username))
+                return BadRequest("Invalid client request");
 
-            if (string.IsNullOrEmpty(username))
-            {
-                _logger.LogWarning("Unauthorized revoke attempt");
-                return Unauthorized();
-            }
+            var result = _userAuthService.RevokeToken(username);
+            if (!result) return BadRequest("Invalid client request");
 
-            var result = _loginService.RevokeToken(username);
-
-            if (!result)
-            {
-                _logger.LogError("Failed to revoke token for user {username}", username);
-                return BadRequest("Could not revoke the token.");
-            }
-
-            _logger.LogInformation("Token revoked successfully for user {username}", username);
             return NoContent();
         }
     }
