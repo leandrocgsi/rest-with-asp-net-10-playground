@@ -5,7 +5,7 @@ using RestWithASPNETErudio.Services;
 namespace RestWithASPNET10Erudio.Controllers.V1
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/v1")]
     public class AuthController : ControllerBase
     {
         private readonly ILoginService _loginService;
@@ -15,7 +15,7 @@ namespace RestWithASPNET10Erudio.Controllers.V1
             _loginService = loginService;
         }
 
-        [HttpPost("login")]
+        [HttpPost("signin")]
         [ProducesResponseType(200, Type = typeof(TokenDTO))]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
