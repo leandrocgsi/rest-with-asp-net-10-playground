@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
 
-namespace RestWithASPNET10Erudio.Services
+namespace RestWithASPNET10Erudio.Auth.Contract
 {
-    public interface ITokenService
+    public interface ITokenGenerator
     {
         string GenerateAccessToken(IEnumerable<Claim> claims);
         string GenerateRefreshToken();

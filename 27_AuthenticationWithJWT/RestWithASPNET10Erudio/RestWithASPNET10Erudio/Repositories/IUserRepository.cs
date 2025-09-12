@@ -4,6 +4,6 @@ namespace RestWithASPNET10Erudio.Repositories
 {
     public interface IUserRepository : IRepository<User>
     {
-        User? GetByUsername(string username);
+        User? FindByUsername(string username);
     }
 }

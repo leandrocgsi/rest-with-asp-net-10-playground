@@ -1,7 +1,8 @@
-﻿using System.Security.Cryptography;
+﻿using RestWithASPNET10Erudio.Auth.Contract;
+using System.Security.Cryptography;
 using System.Text;
 
-namespace RestWithASPNET10Erudio.Services.Impl
+namespace RestWithASPNET10Erudio.Auth.Tools
 {
     public class Sha256PasswordHasher : IPasswordHasher
     {

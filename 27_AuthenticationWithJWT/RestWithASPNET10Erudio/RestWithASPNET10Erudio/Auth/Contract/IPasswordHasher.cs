@@ -1,4 +1,4 @@
-﻿namespace RestWithASPNET10Erudio.Services
+﻿namespace RestWithASPNET10Erudio.Auth.Contract
 {
     public interface IPasswordHasher
     {

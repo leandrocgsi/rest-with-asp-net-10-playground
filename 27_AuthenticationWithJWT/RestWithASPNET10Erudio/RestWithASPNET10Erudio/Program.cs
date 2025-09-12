@@ -1,3 +1,5 @@
+using RestWithASPNET10Erudio.Auth.Contract;
+using RestWithASPNET10Erudio.Auth.Tools;
 using RestWithASPNET10Erudio.Configurations;
 using RestWithASPNET10Erudio.Files.Exporters.Factory;
 using RestWithASPNET10Erudio.Files.Exporters.Impl;
@@ -62,15 +64,11 @@ builder.Services.AddScoped<FileExporterFactory>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IFileServices, FileServicesImpl>();
 
-// AUTENTICAÇÃO - LINHAS REMOVIDAS
-// builder.Services.AddScoped<ILoginService, LoginServiceImpl>(); // REMOVIDO
-// builder.Services.AddTransient<ITokenService, TokenServiceImpl>(); // REMOVIDO
-
 // ADICIONADAS
 builder.Services.AddScoped<IPasswordHasher, Sha256PasswordHasher>(); // ADICIONADO
 builder.Services.AddScoped<IUserAuthService, UserAuthServiceImpl>(); // ADICIONADO
 builder.Services.AddScoped<ILoginService, LoginServiceImpl>(); // ADICIONADO
-builder.Services.AddScoped<ITokenService, TokenServiceImpl>(); // ADICIONADO
+builder.Services.AddScoped<ITokenGenerator, TokenGenerator>(); // ADICIONADO
 
 var app = builder.Build();
 

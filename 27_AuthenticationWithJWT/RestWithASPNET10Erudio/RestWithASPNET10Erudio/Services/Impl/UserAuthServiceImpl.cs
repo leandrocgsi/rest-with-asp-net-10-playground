@@ -1,4 +1,5 @@
-﻿using RestWithASPNET10Erudio.Data.DTO.V1;
+﻿using RestWithASPNET10Erudio.Auth.Contract;
+using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Model;
 using RestWithASPNET10Erudio.Repositories;
 
@@ -15,9 +16,9 @@ namespace RestWithASPNET10Erudio.Services.Impl
             _passwordHasher = passwordHasher;
         }
 
-        public User? GetByUsername(string username)
+        public User? FindByUsername(string username)
         {
-            return _repository.GetByUsername(username);
+            return _repository.FindByUsername(username);
         }
 
         public User Create(AccountCredentialsDTO dto)
@@ -38,7 +39,7 @@ namespace RestWithASPNET10Erudio.Services.Impl
 
         public bool RevokeToken(string username)
         {
-            var user = _repository.GetByUsername(username);
+            var user = _repository.FindByUsername(username);
             if (user == null) return false;
 
             user.RefreshToken = null;

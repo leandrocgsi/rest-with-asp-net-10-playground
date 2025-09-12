@@ -1,5 +1,4 @@
 ﻿using RestWithASPNET10Erudio.Model.Base;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RestWithASPNET10Erudio.Model

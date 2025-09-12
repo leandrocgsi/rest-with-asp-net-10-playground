@@ -5,7 +5,7 @@ namespace RestWithASPNET10Erudio.Services
 {
     public interface IUserAuthService
     {
-        User? GetByUsername(string username);
+        User? FindByUsername(string username);
         User Create(AccountCredentialsDTO dto);
         bool RevokeToken(string username);
         User Update(User user);
