@@ -15,8 +15,8 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Auth
     public class AuthIntegrationTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
-        private static TokenDTO _token;
-        private static AccountCredentialsDTO _createdUser;
+        private static TokenDTO? _token;
+        private static AccountCredentialsDTO? _createdUser;
 
         public AuthIntegrationTests(SqlServerFixture sqlFixture)
         {
@@ -65,8 +65,8 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Auth
             // Arrange
             var credentials = new UserDTO
             {
-                Username = _createdUser.Username,
-                Password = _createdUser.Password
+                Username = _createdUser?.Username,
+                Password = _createdUser?.Password
             };
 
             // Act
@@ -109,7 +109,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Auth
         {
             // Arrange
             _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+                new AuthenticationHeaderValue("Bearer", _token?.AccessToken);
 
             // Act
             var response = await _httpClient.PostAsync("api/auth/revoke", null);
