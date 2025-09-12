@@ -32,12 +32,12 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
-        working-directory: 24_UploadAndDownloadFiles/RestWithASPNET10Erudio
+        working-directory: 30_DockerizingOurApp/RestWithASPNET10Erudio
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
-        working-directory: 24_UploadAndDownloadFiles/RestWithASPNET10Erudio
+        working-directory: 30_DockerizingOurApp/RestWithASPNET10Erudio
 
       - name: Run tests
         run: dotnet test --configuration Release --no-build --logger "console;verbosity=detailed"
-        working-directory: 24_UploadAndDownloadFiles/RestWithASPNET10Erudio
+        working-directory: 30_DockerizingOurApp/RestWithASPNET10Erudio
