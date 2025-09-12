@@ -1,8 +1,11 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Newtonsoft.Json.Linq;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
+using RestWithASPNETErudio.Data.DTO;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
@@ -14,6 +17,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
     {
         private readonly HttpClient _httpClient;
         private static PersonDTO _person;
+        private static TokenDTO _token;
 
         public PersonCorsIntegrationTests(SqlServerFixture sqlFixture)
         {
@@ -32,6 +36,37 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         {
             _httpClient.DefaultRequestHeaders.Remove("Origin");
             _httpClient.DefaultRequestHeaders.Add("Origin", origin);
+            // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+
+        }
+
+
+        [Fact(DisplayName = "00 - SignIn")]
+        [TestPriority(0)]
+        public async Task SignIn_ShouldReturnToken()
+        {
+            // Arrange
+            var credentials = new UserDTO
+            {
+                Username = "leandro",
+                Password = "admin123"
+            };
+
+            // Act
+            var response = await _httpClient
+                .PostAsJsonAsync("api/auth/signin", credentials);
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            var token = await response.Content.ReadFromJsonAsync<TokenDTO>();
+
+            token.Should().NotBeNull();
+            token.AccessToken.Should().NotBeNullOrEmpty();
+            token.RefreshToken.Should().NotBeNullOrEmpty();
+
+            _token = token;
         }
 
         [Fact(DisplayName = "01 - Create Person With Allowed Origin")]
