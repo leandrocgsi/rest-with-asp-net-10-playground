@@ -7,6 +7,9 @@ on:
 jobs:
   test-sql-container:
     runs-on: ubuntu-latest
+    env:
+      EMAIL_USERNAME: ${{ vars.EMAIL_USERNAME }}
+      EMAIL_PASSWORD: ${{ vars.EMAIL_PASSWORD }}
 
     steps:
       - name: Create SQL Server Container
