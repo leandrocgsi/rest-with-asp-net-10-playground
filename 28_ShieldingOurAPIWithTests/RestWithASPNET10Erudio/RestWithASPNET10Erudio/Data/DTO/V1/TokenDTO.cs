@@ -1,16 +1,28 @@
 ﻿namespace RestWithASPNET10Erudio.Data.DTO.V1
 {
-    public class TokenDTO(
-        bool authenticated,
-        string created,
-        string expiration,
-        string accessToken,
-        string refreshToken)
+    public class TokenDTO
     {
-        public bool Authenticated { get; set; } = authenticated;
-        public string Created { get; set; } = created;
-        public string Expiration { get; set; } = expiration;
-        public string AccessToken { get; set; } = accessToken;
-        public string RefreshToken { get; set; } = refreshToken;
+        public bool Authenticated { get; set; }
+        public string Created { get; set; }
+        public string Expiration { get; set; }
+        public string AccessToken { get; set; }
+        public string RefreshToken { get; set; }
+
+        public TokenDTO() {}
+
+        public TokenDTO(
+            bool authenticated,
+            string created,
+            string expiration,
+            string accessToken,
+            string refreshToken)
+        {
+            Authenticated = authenticated;
+            Created = created;
+            Expiration = expiration;
+            AccessToken = accessToken;
+            RefreshToken = refreshToken;
+        }
+
     }
 }

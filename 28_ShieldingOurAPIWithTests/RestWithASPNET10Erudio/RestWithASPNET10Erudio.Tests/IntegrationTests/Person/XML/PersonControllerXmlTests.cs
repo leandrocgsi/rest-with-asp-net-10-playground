@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Hypermedia.Utils;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
+using RestWithASPNETErudio.Data.DTO;
 using System.Net;
 using System.Net.Http.Headers;
 
@@ -15,6 +16,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Person.XML
     {
         private readonly HttpClient _httpClient;
         private static PersonDTO _person;
+        private static TokenDTO _token; // ADICIONADO: token compartilhado
 
         public PersonControllerXmlTests(SqlServerFixture sqlFixture)
         {
@@ -33,11 +35,42 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Person.XML
                 new MediaTypeWithQualityHeaderValue("application/xml"));
         }
 
+        [Fact(DisplayName = "00 - SignIn")]
+        [TestPriority(0)]
+        public async Task SignIn_ShouldReturnToken()
+        {
+            // Arrange
+            var credentials = new UserDTO
+            {
+                Username = "leandro",
+                Password = "admin123"
+            };
+
+            var content = XmlHelper.SerializeToXml(credentials); // ADICIONADO
+
+            // Act
+            var response = await _httpClient.PostAsync("api/auth/signin", content); // ALTERADO para XML
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            var token = await XmlHelper.ReadFromXmlAsync<TokenDTO>(response); // ALTERADO para XML
+
+            token.Should().NotBeNull();
+            token.AccessToken.Should().NotBeNullOrEmpty();
+            token.RefreshToken.Should().NotBeNullOrEmpty();
+
+            _token = token;
+
+        }
+
         [Fact(DisplayName = "01 - Create Person")]
         [TestPriority(1)]
         public async Task CreatePerson_ShouldReturnCreatedPerson()
         {
             // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+
             var request = new PersonDTO
             {
                 FirstName = "Linus",
@@ -72,6 +105,9 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Person.XML
         public async Task UpdatePerson_ShouldReturnUpdatedPerson()
         {
             // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+
             _person.LastName = "Benedict Torvalds";
 
             // Act
@@ -98,7 +134,11 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Person.XML
         [TestPriority(3)]
         public async Task DisablePersonById_ShouldReturnDisabledPerson()
         {
-            // Arrange & Act
+            // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            
+            // Act
             var response = await _httpClient
                 .PatchAsync($"api/person/v1/{_person.Id}", null);
 
@@ -121,7 +161,11 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Person.XML
         [TestPriority(4)]
         public async Task GetPersonById_ShouldReturnPerson()
         {
-            // Arrange & Act
+            // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+
+            // Act
             var response = await _httpClient
                 .GetAsync($"api/person/v1/{_person.Id}");
 
@@ -142,7 +186,11 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Person.XML
         [TestPriority(5)]
         public async Task DeletePersonById_ShouldReturnNoContent()
         {
-            // Arrange & Act
+            // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+
+            // Act
             var response = await _httpClient
                 .DeleteAsync($"api/person/v1/{_person.Id}");
             // Assert
@@ -153,7 +201,11 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Person.XML
         [TestPriority(6)]
         public async Task FindAllPerson_ShouldReturnListOfPerson()
         {
-            // Arrange & Act
+            // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+
+            // Act
             var response = await _httpClient
                 .GetAsync("api/person/v1/asc/10/1");
             // <-- sortDirection=asc, pageSize=10, page=1
