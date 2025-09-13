@@ -1,5 +1,3 @@
-using RestWithASPNET10Erudio.Auth.Contract;
-using RestWithASPNET10Erudio.Auth.Tools;
 using RestWithASPNET10Erudio.Configurations;
 using RestWithASPNET10Erudio.Files.Exporters.Factory;
 using RestWithASPNET10Erudio.Files.Exporters.Impl;
@@ -11,17 +9,17 @@ using RestWithASPNET10Erudio.Repositories;
 using RestWithASPNET10Erudio.Repositories.Impl;
 using RestWithASPNET10Erudio.Services;
 using RestWithASPNET10Erudio.Services.Impl;
-using RestWithASPNETErudio.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSerilogLogging();
 
 builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<HypermediaFilter>();
-})
-.AddContentNegotiation();
+    {
+        options.Filters.Add<HypermediaFilter>();
+    })
+    .AddContentNegotiation();
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenAPIConfig();
@@ -32,20 +30,10 @@ builder.Services.AddCorsConfiguration(builder.Configuration);
 builder.Services.AddHATEOASConfiguration();
 
 builder.Services.AddEmailConfiguration(builder.Configuration);
+
 builder.Services.AddDatabaseConfiguration(builder.Configuration);
 builder.Services.AddEvolveConfiguration(builder.Configuration, builder.Environment);
 
-// Autenticação e Autorização
-builder.Services.AddAuthConfiguration(builder.Configuration);
-
-// Dependency Injection
-
-// REPOSITÓRIOS
-builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped<IPersonRepository, PersonRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-// SERVIÇOS
 builder.Services.AddScoped<IPersonServices, PersonServicesImpl>();
 builder.Services.AddScoped<IBookServices, BookServicesImpl>();
 builder.Services.AddScoped<PersonServicesImplV2>();
@@ -61,24 +49,22 @@ builder.Services.AddScoped<CsvExporter>();
 builder.Services.AddScoped<XlsxExporter>();
 builder.Services.AddScoped<FileExporterFactory>();
 
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); 
 builder.Services.AddScoped<IFileServices, FileServicesImpl>();
 
-// ADICIONADAS
-builder.Services.AddScoped<IPasswordHasher, Sha256PasswordHasher>(); // ADICIONADO
-builder.Services.AddScoped<IUserAuthService, UserAuthServiceImpl>(); // ADICIONADO
-builder.Services.AddScoped<ILoginService, LoginServiceImpl>(); // ADICIONADO
-builder.Services.AddScoped<ITokenGenerator, TokenGenerator>(); // ADICIONADO
+builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
 app.UseHttpsRedirection();
 
-app.UseRouting();
-
-app.UseAuthentication();
 app.UseAuthorization();
+app.UseRouting();
+//app.UseCorsConfiguration();
 app.UseCorsConfiguration(builder.Configuration);
 
 app.MapControllers();
