@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using RestWithASPNET10Erudio.Auth.Config;
 using RestWithASPNET10Erudio.Auth.Contract;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -7,19 +8,20 @@ using System.Text;
 
 namespace RestWithASPNET10Erudio.Auth.Tools
 {
-    public class TokenGenerator(TokenConfiguration configurations)
-        : ITokenGenerator
+    public class TokenGenerator(
+        TokenConfiguration configurations) : ITokenGenerator
     {
-        private readonly TokenConfiguration _configurations 
-            = configurations;
+        private readonly TokenConfiguration 
+            _configurations = configurations;
 
         public string GenerateAccessToken(IEnumerable<Claim> claims)
         {
-            var secretKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configurations.Secret));
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8
+                .GetBytes(_configurations.Secret));
 
-            var signinCredentials = new SigningCredentials(
-                secretKey, SecurityAlgorithms.HmacSha256);
+            var signingCredentials = new 
+                SigningCredentials(secretKey,
+                SecurityAlgorithms.HmacSha256);
 
             var tokenOptions = new JwtSecurityToken(
                 issuer: _configurations.Issuer,
@@ -27,7 +29,7 @@ namespace RestWithASPNET10Erudio.Auth.Tools
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(
                     _configurations.Minutes),
-                signingCredentials: signinCredentials
+                signingCredentials: signingCredentials
             );
 
             return new JwtSecurityTokenHandler()
@@ -47,29 +49,30 @@ namespace RestWithASPNET10Erudio.Auth.Tools
         public ClaimsPrincipal GetPrincipalFromExpiredToken(
             string token)
         {
-            var tokenValidationParameters = 
-                new TokenValidationParameters
+            var tokenValidationParameters = new 
+                TokenValidationParameters
             {
                 ValidateAudience = false,
                 ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(_configurations.Secret)),
-                ValidateLifetime = false // ignora a expiração do token
+                ValidateLifetime = false
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var principal = tokenHandler.ValidateToken(
-                token, tokenValidationParameters,
+                token,
+                tokenValidationParameters,
                 out var securityToken);
 
-            if (securityToken is not JwtSecurityToken jwtSecurityToken
-                || !jwtSecurityToken.Header.Alg.Equals(
-                    SecurityAlgorithms.HmacSha256,
+            if (securityToken is not 
+                JwtSecurityToken jwtSecurityToken
+                || !jwtSecurityToken.Header.Alg
+                    .Equals(SecurityAlgorithms.HmacSha256,
                     StringComparison.InvariantCultureIgnoreCase))
 
                 throw new SecurityTokenException("Invalid token");
-
             return principal;
         }
     }

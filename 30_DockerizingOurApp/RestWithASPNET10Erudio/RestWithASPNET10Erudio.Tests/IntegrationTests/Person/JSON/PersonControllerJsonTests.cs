@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Hypermedia.Utils;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
-using RestWithASPNETErudio.Data.DTO;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -16,8 +15,8 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
     public class PersonControllerJsonTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
-        private static PersonDTO _person;
-        private static TokenDTO _token;
+        private static PersonDTO? _person;
+        private static TokenDTO? _token;
 
         public PersonControllerJsonTests(SqlServerFixture sqlFixture)
         {
@@ -32,7 +31,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
             );
         }
 
-        [Fact(DisplayName = "00 - SignIn")]
+        [Fact(DisplayName = "00 - Sign In")]
         [TestPriority(0)]
         public async Task SignIn_ShouldReturnToken()
         {
@@ -49,11 +48,14 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
 
             // Assert
             response.EnsureSuccessStatusCode();
-            var token = await response.Content.ReadFromJsonAsync<TokenDTO>();
+
+            var token = await response.Content
+                .ReadFromJsonAsync<TokenDTO>();
 
             token.Should().NotBeNull();
-            token.AccessToken.Should().NotBeNullOrEmpty();
-            token.RefreshToken.Should().NotBeNullOrEmpty();
+
+            token.AccessToken.Should().NotBeNullOrWhiteSpace();
+            token.RefreshToken.Should().NotBeNullOrWhiteSpace();
 
             _token = token;
         }
@@ -63,8 +65,9 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task CreatePerson_ShouldReturnCreatedPerson()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
 
             var request = new PersonDTO
             {
@@ -100,10 +103,11 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task UpdatePerson_ShouldReturnUpdatedPerson()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
 
-            _person.LastName = "Benedict Torvalds";
+            _person?.LastName = "Benedict Torvalds";
 
             // Act
             var response = await _httpClient
@@ -130,12 +134,12 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task DisablePersonById_ShouldReturnDisabledPerson()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-            
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
             // Act
             var response = await _httpClient
-                .PatchAsync($"api/person/v1/{_person.Id}", null);
+                .PatchAsync($"api/person/v1/{_person?.Id}", null);
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -158,12 +162,13 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task GetPersonById_ShouldReturnPerson()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-            
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
+
             // Act
             var response = await _httpClient
-                .GetAsync($"api/person/v1/{_person.Id}");
+                .GetAsync($"api/person/v1/{_person?.Id}");
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -172,7 +177,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
                 .ReadFromJsonAsync<PersonDTO>();
 
             found.Should().NotBeNull();
-            found.Id.Should().Be(_person.Id);
+            found.Id.Should().Be(_person?.Id);
             found.FirstName.Should().Be("Linus");
             found.LastName.Should().Be("Benedict Torvalds");
             found.Address.Should().Be("Helsinki - Finland");
@@ -184,12 +189,14 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task DeletePersonById_ShouldReturnNoContent()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
             
             // Act
             var response = await _httpClient
                 .DeleteAsync($"api/person/v1/{_person.Id}");
+            
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }
@@ -199,9 +206,10 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task FindAllPerson_ShouldReturnListOfPerson()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
+            
             // Act
             var response = await _httpClient
                 .GetAsync("api/person/v1/asc/10/1");
@@ -232,7 +240,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
             third.Enabled.Should().BeFalse();
             third.Gender.Should().Be("Male");
 
-            page.CurrentPage.Should().BeGreaterThan(0);
+            page!.CurrentPage.Should().BeGreaterThan(0);
             page.TotalResults.Should().BeGreaterThan(0);
             page.PageSize.Should().BeGreaterThan(0);
             page.SortDirections.Should().NotBeNull();

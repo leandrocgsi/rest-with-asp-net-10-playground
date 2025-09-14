@@ -13,8 +13,9 @@ namespace RestWithASPNET10Erudio.Auth.Tools
 
             var builder = new StringBuilder();
             foreach (var b in hashedBytes)
+            {
                 builder.Append(b.ToString("x2"));
-
+            }
             return builder.ToString();
         }
 

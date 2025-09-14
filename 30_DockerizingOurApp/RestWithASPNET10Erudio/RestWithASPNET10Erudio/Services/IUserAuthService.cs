@@ -8,6 +8,6 @@ namespace RestWithASPNET10Erudio.Services
         User? FindByUsername(string username);
         User Create(AccountCredentialsDTO dto);
         bool RevokeToken(string username);
-        User Update(User user);
+        User Update (User user);
     }
 }

@@ -1,9 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Newtonsoft.Json.Linq;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
-using RestWithASPNETErudio.Data.DTO;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
@@ -18,7 +16,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
     {
         private readonly HttpClient _httpClient;
         private static PersonDTO? _person;
-        private static TokenDTO _token;
+        private static TokenDTO? _token;
 
         public PersonControllerHATEOASTests(SqlServerFixture sqlFixture)
         {
@@ -41,8 +39,7 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
                 .BeTrue($"Link with rel='{rel}' should exist and have valid href");
         }
 
-
-        [Fact(DisplayName = "00 - SignIn")]
+        [Fact(DisplayName = "00 - Sign In")]
         [TestPriority(0)]
         public async Task SignIn_ShouldReturnToken()
         {
@@ -59,11 +56,14 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
 
             // Assert
             response.EnsureSuccessStatusCode();
-            var token = await response.Content.ReadFromJsonAsync<TokenDTO>();
+
+            var token = await response.Content
+                .ReadFromJsonAsync<TokenDTO>();
 
             token.Should().NotBeNull();
-            token.AccessToken.Should().NotBeNullOrEmpty();
-            token.RefreshToken.Should().NotBeNullOrEmpty();
+
+            token.AccessToken.Should().NotBeNullOrWhiteSpace();
+            token.RefreshToken.Should().NotBeNullOrWhiteSpace();
 
             _token = token;
         }
@@ -73,8 +73,9 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
         public async Task CreatePerson_ShouldContainHateoasLinks()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
 
             var request = new PersonDTO
             {
@@ -104,14 +105,17 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
         public async Task UpdatePerson_ShouldContainHateoasLinks()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
 
             _person!.LastName = "Heinemeier Hansson";
 
+            // Act
             var response = await _httpClient.PutAsJsonAsync(
                 "/api/person/v1", _person);
 
+            // Assert
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
@@ -130,9 +134,11 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
         public async Task DisablePersonById_ShouldContainHateoasLinks()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
 
+            // Act
             var response = await _httpClient.PatchAsync(
                 $"/api/person/v1/{_person!.Id}", null);
 
@@ -155,9 +161,11 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
         public async Task GetPersonById_ShouldContainHateoasLinks()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
 
+            // Act
             var response = await _httpClient.GetAsync(
                 $"/api/person/v1/{_person!.Id}");
 
@@ -179,9 +187,13 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.HATEOAS
         public async Task FindAll_ShouldReturnLinksForEachPerson()
         {
             // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
 
+            // ---------------------------
+            // Act
+            // ---------------------------
             // Perform the HTTP GET request to retrieve all persons.
             var response = await _httpClient
                 .GetAsync("api/person/v1/asc/10/1");// Ensures the response status code is 2xx.

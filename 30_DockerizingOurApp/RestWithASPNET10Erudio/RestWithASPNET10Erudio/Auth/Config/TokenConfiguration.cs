@@ -1,4 +1,4 @@
-﻿namespace RestWithASPNET10Erudio.Auth
+﻿namespace RestWithASPNET10Erudio.Auth.Config
 {
     public class TokenConfiguration
     {

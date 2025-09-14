@@ -1,95 +1,92 @@
 ﻿using Microsoft.IdentityModel.JsonWebTokens;
-using RestWithASPNET10Erudio.Auth;
+using RestWithASPNET10Erudio.Auth.Config;
 using RestWithASPNET10Erudio.Auth.Contract;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Model;
-using RestWithASPNETErudio.Data.DTO;
-using RestWithASPNETErudio.Services;
 using System.Security.Claims;
 
 namespace RestWithASPNET10Erudio.Services.Impl
 {
+
     public class LoginServiceImpl : ILoginService
     {
         private const string DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-        private readonly TokenConfiguration _configurations;
-        private readonly ITokenGenerator _tokenService;
         private readonly IUserAuthService _userAuthService;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly ITokenGenerator _tokenService;
+        private readonly TokenConfiguration _configurations;
 
         public LoginServiceImpl(
-            TokenConfiguration configurations,
-            ITokenGenerator tokenService,
             IUserAuthService userAuthService,
-            IPasswordHasher passwordHasher)
+            IPasswordHasher passwordHasher,
+            ITokenGenerator tokenService,
+            TokenConfiguration configurations)
         {
-            _configurations = configurations;
-            _tokenService = tokenService;
             _userAuthService = userAuthService;
             _passwordHasher = passwordHasher;
+            _tokenService = tokenService;
+            _configurations = configurations;
         }
 
-        public TokenDTO? ValidateCredentials(UserDTO userDto)
+        public TokenDTO ValidateCredentials(UserDTO userDto)
         {
-            var user = _userAuthService.FindByUsername(
-                userDto.Username);
+            var user = _userAuthService
+                .FindByUsername(userDto.Username);
+
             if (user == null) return null;
-
-            if (!_passwordHasher.Verify(
-                userDto.Password, user.Password))
-
+            if (!_passwordHasher.Verify(userDto.Password, user.Password))
                 return null;
 
-            return GenerateTokens(user);
+            return GenerateToken(user);
         }
 
-        public TokenDTO? ValidateCredentials(TokenDTO token)
+        public TokenDTO ValidateCredentials(TokenDTO token)
         {
             var principal = _tokenService
                 .GetPrincipalFromExpiredToken(token.AccessToken);
-
             var username = principal.Identity?.Name;
 
             var user = _userAuthService.FindByUsername(username);
             if (user == null ||
                 user.RefreshToken != token.RefreshToken ||
-                user.RefreshTokenExpiryTime <= DateTime.Now)
+                user.RefreshTokenExpiryTime <= DateTime.Now
+                ) 
                 return null;
-
-            return GenerateTokens(user, principal.Claims);
-        }
-
-        public bool RevokeToken(string username)
-        {
-            return _userAuthService.RevokeToken(username);
+            return GenerateToken(user, principal.Claims);
         }
 
         public AccountCredentialsDTO Create(AccountCredentialsDTO dto)
         {
-            var user = _userAuthService.Create(dto);
+            var user = _userAuthService
+                .Create(dto);
 
             return new AccountCredentialsDTO
             {
-                Username = user.UserName,
-                FullName = user.FullName,
-                Password = "*****************"
+                Username = user.Username,
+                Fullname = user.FullName,
+                Password = "************"
             };
         }
 
-        private TokenDTO GenerateTokens(
-            User user, IEnumerable<Claim>? existingClaims = null)
+        public bool RevokeToken(string username)
         {
-            var claims = existingClaims?.ToList() ?? new List<Claim>
-            {
-                new Claim(
-                    JwtRegisteredClaimNames.Jti,
-                    Guid.NewGuid().ToString("N")),
+            return _userAuthService
+                .RevokeToken(username);
+        }
 
-                new Claim(
-                    JwtRegisteredClaimNames.UniqueName,
-                    user.UserName)
-            };
+        private TokenDTO GenerateToken(User user,
+            IEnumerable<Claim>? existingClaims = null)
+        {
+            var claims = existingClaims?.ToList() ??
+                // new List<Claim>
+                [
+                    new Claim(JwtRegisteredClaimNames.Jti,
+                        Guid.NewGuid().ToString("N")),
+
+                    new Claim(JwtRegisteredClaimNames.UniqueName,
+                        user.Username),
+                ];
 
             var accessToken = _tokenService
                 .GenerateAccessToken(claims);
@@ -98,22 +95,25 @@ namespace RestWithASPNET10Erudio.Services.Impl
                 .GenerateRefreshToken();
 
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = 
-                DateTime.Now.AddDays(_configurations.DaysToExpiry);
-
+            user.RefreshTokenExpiryTime = DateTime.Now
+                .AddDays(_configurations.DaysToExpiry);
+            
             _userAuthService.Update(user);
 
-            var createDate = DateTime.Now;
-            var expirationDate = createDate.AddMinutes(
-                _configurations.Minutes);
+            var createdDate = DateTime.Now;
+            var expirationDate = createdDate
+                .AddMinutes(_configurations.Minutes);
 
-            return new TokenDTO(
-                true,
-                createDate.ToString(DATE_FORMAT),
-                expirationDate.ToString(DATE_FORMAT),
-                accessToken,
-                refreshToken
-            );
+            return new TokenDTO
+            {
+                Authenticated = true,
+                Created = createdDate.ToString(DATE_FORMAT),
+                Expiration = expirationDate
+                    .ToString(DATE_FORMAT),
+
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            };
         }
     }
 }

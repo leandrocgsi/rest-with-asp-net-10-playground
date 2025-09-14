@@ -5,24 +5,18 @@ using RestWithASPNET10Erudio.Mail.Settings;
 
 namespace RestWithASPNET10Erudio.Mail
 {
-    public class EmailSender
+    public class EmailSender(
+        EmailSettings settings,
+        ILogger<EmailSender> logger)
     {
-        private readonly EmailSettings _settings;
-        private readonly ILogger<EmailSender> _logger;
+        private readonly EmailSettings _settings = settings;
+        private readonly ILogger<EmailSender> _logger = logger;
 
         private string _to;
         private string _subject;
         private string _body;
         private readonly List<MailboxAddress> _recipients = new();
         private string? _attachment;
-
-        public EmailSender(
-            EmailSettings settings,
-            ILogger<EmailSender> logger)
-        {
-            _settings = settings;
-            _logger = logger;
-        }
 
         public EmailSender To(string to)
         {
@@ -49,10 +43,11 @@ namespace RestWithASPNET10Erudio.Mail
             if (File.Exists(filePath))
             {
                 _attachment = filePath;
+                return this;
             }
             else
             {
-                _logger.LogWarning("Attachment not found: {FilePath}", filePath);
+                _logger.LogWarning("Attachment file not found: {FilePath}", filePath);
             }
             return this;
         }
@@ -60,38 +55,46 @@ namespace RestWithASPNET10Erudio.Mail
         public void Send()
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(_settings.From, _settings.Username));
+
+            message.From.Add(
+                new MailboxAddress(_settings.From, _settings.Username));
+
             message.To.AddRange(_recipients);
             message.Subject = _subject ?? _settings.Subject ?? "No Subject";
 
-            var builder = new BodyBuilder { TextBody = _body ?? _settings.Message ?? "" };
-
-            if (!string.IsNullOrEmpty(_attachment))
+            var builder = new BodyBuilder
             {
-                var fileName = Path.GetFileName(_attachment); // preserva extensão original
-                builder.Attachments.Add(fileName, File.ReadAllBytes(_attachment)); // LINHA ALTERADA AQUI
+                TextBody = _body ?? _settings.Message ?? ""
+            };
+
+            if (!string.IsNullOrWhiteSpace(_attachment))
+            {
+                var filename = Path.GetFileName(_attachment);
+                builder.Attachments
+                    .Add(filename, File.ReadAllBytes(_attachment));
             }
-
             message.Body = builder.ToMessageBody();
-
+            
             try
             {
                 using var client = new SmtpClient();
+
                 client.Connect(
                     _settings.Host,
                     _settings.Port,
-                    _settings.Ssl ? SecureSocketOptions.StartTls : SecureSocketOptions.None
-                );
-
+                    _settings.Ssl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
+                    
                 client.Authenticate(_settings.Username, _settings.Password);
                 client.Send(message);
                 client.Disconnect(true);
 
-                _logger.LogInformation("E-mail successfully sent to {Recipients}", string.Join(";", _recipients));
+                _logger.LogWarning("E-mail successfully sent to {Recipients}",
+                    string.Join(";", _recipients));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending e-mail to {Recipients}", string.Join(";", _recipients));
+                _logger.LogError(ex, "Failed to send e-mail to {Recipients}",
+                    string.Join(";", _recipients));
                 throw;
             }
             finally
@@ -102,8 +105,9 @@ namespace RestWithASPNET10Erudio.Mail
 
         private IEnumerable<MailboxAddress> ParseRecipients(string to)
         {
-            var tosWithoutSpaces = to.Replace(" ", "");
-            var recipients = tosWithoutSpaces.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            var tosWithoutSpaces = to.Replace(" ", string.Empty);
+            var recipients = tosWithoutSpaces.Split(';',
+                StringSplitOptions.RemoveEmptyEntries);
 
             var list = new List<MailboxAddress>();
 
@@ -111,14 +115,14 @@ namespace RestWithASPNET10Erudio.Mail
             {
                 try
                 {
-                    list.Add(MailboxAddress.Parse(address));
+                    var mailbox = MailboxAddress.Parse(address);
+                    list.Add(mailbox);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Invalid e-mail address ignored: {Address}", address);
+                    _logger.LogWarning(ex, "Invalid e-mail address: {Address}", address);
                 }
             }
-
             return list;
         }
 
@@ -130,6 +134,5 @@ namespace RestWithASPNET10Erudio.Mail
             _recipients.Clear();
             _attachment = null;
         }
-
     }
 }

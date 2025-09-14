@@ -1,7 +1,6 @@
 ﻿using RestWithASPNET10Erudio.Data.DTO.V1;
-using RestWithASPNETErudio.Data.DTO;
 
-namespace RestWithASPNETErudio.Services
+namespace RestWithASPNET10Erudio.Services
 {
     public interface ILoginService
     {

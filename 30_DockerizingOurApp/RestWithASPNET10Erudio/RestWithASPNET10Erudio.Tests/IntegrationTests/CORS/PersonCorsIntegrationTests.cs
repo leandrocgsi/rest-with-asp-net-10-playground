@@ -1,9 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Newtonsoft.Json.Linq;
 using RestWithASPNET10Erudio.Data.DTO.V1;
 using RestWithASPNET10Erudio.Tests.IntegrationTests.Tools;
-using RestWithASPNETErudio.Data.DTO;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -16,8 +14,8 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
     public class PersonCorsIntegrationTests : IClassFixture<SqlServerFixture>
     {
         private readonly HttpClient _httpClient;
-        private static PersonDTO _person;
-        private static TokenDTO _token;
+        private static PersonDTO? _person;
+        private static TokenDTO? _token;
 
         public PersonCorsIntegrationTests(SqlServerFixture sqlFixture)
         {
@@ -36,18 +34,17 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         {
             _httpClient.DefaultRequestHeaders.Remove("Origin");
             _httpClient.DefaultRequestHeaders.Add("Origin", origin);
-            // Arrange
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token.AccessToken);
-
         }
 
-
-        [Fact(DisplayName = "00 - SignIn")]
+        [Fact(DisplayName = "00 - Sign In")]
         [TestPriority(0)]
         public async Task SignIn_ShouldReturnToken()
         {
             // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
+
             var credentials = new UserDTO
             {
                 Username = "leandro",
@@ -60,11 +57,14 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
 
             // Assert
             response.EnsureSuccessStatusCode();
-            var token = await response.Content.ReadFromJsonAsync<TokenDTO>();
+
+            var token = await response.Content
+                .ReadFromJsonAsync<TokenDTO>();
 
             token.Should().NotBeNull();
-            token.AccessToken.Should().NotBeNullOrEmpty();
-            token.RefreshToken.Should().NotBeNullOrEmpty();
+
+            token.AccessToken.Should().NotBeNullOrWhiteSpace();
+            token.RefreshToken.Should().NotBeNullOrWhiteSpace();
 
             _token = token;
         }
@@ -74,6 +74,10 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task CreatePerson_WithAllowedOrigin_ShouldReturnCreated()
         {
             // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
+
             AddOriginHeader("https://erudio.com.br");
 
             var request = new PersonDTO
@@ -104,6 +108,10 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task CreatePerson_WithDisallowedOrigin_ShouldReturnForbiden()
         {
             // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
+
             AddOriginHeader("https://semeru.com.br");
 
             var request = new PersonDTO
@@ -131,6 +139,10 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task FindPersonById_WithAllowedOrigin_ShouldReturnOk()
         {
             // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
+
             AddOriginHeader("https://erudio.com.br");
 
             // Act
@@ -155,6 +167,10 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.CORS
         public async Task FindByIdPerson_WithDisallowedOrigin_ShouldReturnForbiden()
         {
             // Arrange
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue
+                    ("Bearer", _token?.AccessToken);
+
             AddOriginHeader("https://semeru.com.br");
 
             // Act
