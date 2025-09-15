@@ -1,0 +1,6 @@
+services:
+  restwithaspnet10erudio:
+    image: ${DOCKER_REGISTRY-}restwithaspnet10erudio
+    build:
+      context: .
+      dockerfile: RestWithASPNET10Erudio/Dockerfile
