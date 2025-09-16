@@ -1,4 +1,5 @@
-﻿using RestWithASPNET10Erudio.Configurations;
+﻿using DotNet.Testcontainers.Builders;
+using RestWithASPNET10Erudio.Configurations;
 using Testcontainers.MsSql;
 
 namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
@@ -12,9 +13,14 @@ namespace RestWithASPNET10Erudio.Tests.IntegrationTests.Tools
         public SqlServerFixture()
         {
             Container = new MsSqlBuilder()
-                .WithPassword("@Admin123$")
+                .WithPassword("@Admin123")
+                .WithWaitStrategy(
+                    Wait.ForUnixContainer()
+                        .UntilMessageIsLogged(
+                        "SQL Server is now ready for client connections"))
                 .Build();
         }
+
         public async Task InitializeAsync()
         {
             await Container.StartAsync();
