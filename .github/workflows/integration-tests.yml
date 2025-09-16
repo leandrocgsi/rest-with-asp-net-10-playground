@@ -1,4 +1,4 @@
-name: Run .NET 10 Integration Tests on SQL Server Container
+name: Continuous Integration, Delivery and Deployment with Github Actions and .NET 10
 
 on:
   push:
