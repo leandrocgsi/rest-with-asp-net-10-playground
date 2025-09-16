@@ -19,12 +19,15 @@ services:
     restart: always
     ports:
       - 9000:9000
-    #volumes:
-    #  - /var/run/docker.sock:/var/run/docker.sock
-    #  - portainer_data:/data
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data           # volume agora declarado
     networks:
       - erudio-network
 
 networks:
   erudio-network:
     driver: bridge
+
+volumes:                             # ADICIONADO para definir portainer_data
+  portainer_data:
