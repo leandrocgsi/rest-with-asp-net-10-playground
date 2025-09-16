@@ -1,6 +1,35 @@
 services:
-  restwithaspnet10erudio:
-    image: ${DOCKER_REGISTRY-}restwithaspnet10erudio
+  rest-with-asp-net-10-erudio:
+    container_name: rest-with-asp-net-10-erudio
+    image: leandrocgsi/rest-with-asp-net-10-erudio:latest
     build:
       context: .
       dockerfile: RestWithASPNET10Erudio/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MSSQLServerSQLConnection__MSSQLServerSQLConnectionString=Data Source=host.docker.internal,1433;Initial Catalog=asp_net_10_erudio;User Id=sa;Password=@Admin123;TrustServerCertificate=True;
+    volumes:
+      - '${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro'
+      - '${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro'
+      - '${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro'
+      - '${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro'
+    networks:
+      - erudio-network
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    restart: always
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - erudio-network
+
+networks:
+  erudio-network:
+    driver: bridge

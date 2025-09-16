@@ -12,6 +12,9 @@ namespace RestWithASPNET10Erudio.Configurations
             IConfiguration configuration,
             IWebHostEnvironment environment)
         {
+            // var runningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true"; // ALTERED
+
+            // if (environment.IsDevelopment() && !runningInContainer)
             if (environment.IsDevelopment())
             {
                 var connectionString = configuration[
