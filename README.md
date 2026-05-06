@@ -1,15 +1,15 @@
-# [Formação ASP.NET 2026: do Zero ao Deploy na Azure e GCP com .NET 10, Docker e Kubernetes](https://pub.erudio.com.br/asp-net-2026-do-0-a-azure-e-gcp-com-asp-net-10-docker-e-kubernetes?utm_source=github&utm_medium=organic&utm_campaign=readme&utm_content=repo-oficial)
+# [Formação ASP.NET 2026: do Zero ao Deploy na Azure e GCP com .NET 10, Docker e Kubernetes](https://pub.erudio.com.br/asp-net-2026-do-0-a-azure-e-gcp-com-asp-net-10-docker-e-kubernetes?utm_source=github&utm_medium=organic&utm_campaign=readme&utm_content=repo-playground)
 
-### [Domine REST APIs com ASP.NET, .NET 10, Docker e Kubernetes do Zero ao Deploy na Azure e GCP](https://pub.erudio.com.br/asp-net-2026-do-0-a-azure-e-gcp-com-asp-net-10-docker-e-kubernetes?utm_source=github&utm_medium=organic&utm_campaign=readme&utm_content=repo-oficial)
+### [Domine REST APIs com ASP.NET, .NET 10, Docker e Kubernetes do Zero ao Deploy na Azure e GCP](https://pub.erudio.com.br/asp-net-2026-do-0-a-azure-e-gcp-com-asp-net-10-docker-e-kubernetes?utm_source=github&utm_medium=organic&utm_campaign=readme&utm_content=repo-playground)
 
 [![Continuous Integration, Delivery and Deployment with Github Actions and .NET 10](https://github.com/leandrocgsi/rest-with-asp-net-10-erudio/actions/workflows/continuous-deployment.yml/badge.svg)](https://github.com/leandrocgsi/rest-with-asp-net-10-erudio/actions/workflows/continuous-deployment.yml)
 ![Forks](https://img.shields.io/github/forks/leandrocgsi/rest-with-asp-net-10-erudio)
 ![Stars](https://img.shields.io/github/stars/leandrocgsi/rest-with-asp-net-10-erudio)
 ![Last Commit](https://img.shields.io/github/last-commit/leandrocgsi/rest-with-asp-net-10-erudio)
 
-[![Image](https://raw.githubusercontent.com/leandrocgsi/blog-images/refs/heads/main/formacoes_github/01-rest-asp-net.png "Formação ASP.NET 2026: do Zero ao Deploy na Azure e GCP com .NET 10, Docker e Kubernetes")](https://pub.erudio.com.br/asp-net-2026-do-0-a-azure-e-gcp-com-asp-net-10-docker-e-kubernetes?utm_source=github&utm_medium=organic&utm_campaign=readme&utm_content=repo-oficial)
+[![Image](https://raw.githubusercontent.com/leandrocgsi/blog-images/refs/heads/main/formacoes_github/01-rest-asp-net.png "Formação ASP.NET 2026: do Zero ao Deploy na Azure e GCP com .NET 10, Docker e Kubernetes")](https://pub.erudio.com.br/asp-net-2026-do-0-a-azure-e-gcp-com-asp-net-10-docker-e-kubernetes?utm_source=github&utm_medium=organic&utm_campaign=readme&utm_content=repo-playground)
 
-Este é o repositório dos códigos fonte desenvolvidos no curso [Formação ASP.NET 2026: do Zero ao Deploy na Azure e GCP com .NET 10, Docker e Kubernetes](https://pub.erudio.com.br/asp-net-2026-do-0-a-azure-e-gcp-com-asp-net-10-docker-e-kubernetes?utm_source=github&utm_medium=organic&utm_campaign=readme&utm_content=repo-oficial)
+Este é o repositório dos códigos fonte desenvolvidos no curso [Formação ASP.NET 2026: do Zero ao Deploy na Azure e GCP com .NET 10, Docker e Kubernetes](https://pub.erudio.com.br/asp-net-2026-do-0-a-azure-e-gcp-com-asp-net-10-docker-e-kubernetes?utm_source=github&utm_medium=organic&utm_campaign=readme&utm_content=repo-playground)
 
 # Cursos Relacionados
 
